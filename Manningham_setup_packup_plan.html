@@ -38,6 +38,10 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 .tasks{margin:4px 0 0;padding-left:16px;color:#333}
 .tasks.p{color:#7a4a08}
 .away{color:var(--mut);font-style:italic}
+.logos{display:flex;align-items:center;gap:8px;margin-top:6px}
+.clogo{height:30px;width:30px;object-fit:contain;border-radius:4px;background:#fff;border:1px solid var(--line);padding:2px}
+.logos .vs{font-size:11px;color:var(--mut);font-weight:600}
+@media print{.clogo{height:26px;width:26px}}
 .foot{color:var(--mut);font-size:11px;margin-top:22px}
 @media print{.controls{display:none}header{-webkit-print-color-adjust:exact}}
 #grounds{margin:14px 0 6px}#grounds h2{margin-top:8px}
@@ -191,6 +195,9 @@ dsel.onchange=e=>{date=e.target.value;render();};
 document.getElementById('only').onchange=e=>{onlyduty=e.target.checked;render();};
 document.getElementById('q').oninput=e=>{q=e.target.value.toLowerCase();render();};
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+var CLUBS=[["Westside Strikers Caroline Springs FC","westside-strikers-caroline-springs-fc"],["Hampton Park United Sparrows FC","hampton-park-united-sparrows-fc"],["Lilydale Montrose United FC","lilydale-montrose-united-fc"],["Bentleigh United Cobras FC","bentleigh-united-cobras-fc"],["Manningham United Blues FC","manningham-united-blues-fc"],["Monash City Villarreal FC","monash-city-villarreal-fc"],["Hampton East Brighton FC","hampton-east-brighton-fc"],["Geelong Galaxy United FC","geelong-galaxy-united-fc"],["Barnstoneworth United FC","barnstoneworth-united-fc"],["Keysborough District FC","keysborough-district-fc"],["East Malvern Junior SC","east-malvern-junior-sc"],["Manningham Juventus FC","manningham-juventus-fc"],["Melbourne Victory FC","melbourne-victory-fc"],["Melbourne City - NPL","melbourne-city-npl"],["Bayside Argonauts FC","bayside-argonauts-fc"],["Maccabi FC Caulfield","maccabi-fc-caulfield"],["Footscray Rangers FC","footscray-rangers-fc"],["Boroondara Eagles FC","boroondara-eagles-fc"],["Bunyip & District SC","bunyip-district-sc"],["Whittlesea United SC","whittlesea-united-sc"],["Whitehorse United SC","whitehorse-united-sc"],["Melbourne Knights FC","melbourne-knights-fc"],["Bentleigh Greens SC","bentleigh-greens-sc"],["Ashburton United SC","ashburton-united-sc"],["Doncaster Rovers SC","doncaster-rovers-sc"],["Hoppers Crossing SC","hoppers-crossing-sc"],["Collingwood City FC","collingwood-city-fc"],["Endeavour United SC","endeavour-united-sc"],["Oakleigh Cannons FC","oakleigh-cannons-fc"],["South Melbourne FC","south-melbourne-fc"],["Eltham Redbacks FC","eltham-redbacks-fc"],["Essendon Royals SC","essendon-royals-sc"],["Pakenham United FC","pakenham-united-fc"],["Frankston Pines SC","frankston-pines-sc"],["Southern United FC","southern-united-fc"],["Nunawading City FC","nunawading-city-fc"],["Old Melburnians SC","old-melburnians-sc"],["Northcote City FC","northcote-city-fc"],["Croydon Ranges SC","croydon-ranges-sc"],["Darebin Womens SC","darebin-womens-sc"],["Dandenong City SC","dandenong-city-sc"],["Port Melbourne SC","port-melbourne-sc"],["FC Bulleen Lions","fc-bulleen-lions"],["Waverley City SC","waverley-city-sc"],["Eastern Lions SC","eastern-lions-sc"],["Doreen United SC","doreen-united-sc"],["Ringwood City FC","ringwood-city-fc"],["Fitzroy Lions SC","fitzroy-lions-sc"],["Brandon Park SC","brandon-park-sc"],["Croydon City SC","croydon-city-sc"],["Malvern City FC","malvern-city-fc"],["Berwick City SC","berwick-city-sc"],["Mount Martha SC","mount-martha-sc"],["FC Clifton Hill","fc-clifton-hill"],["Burwood City FC","burwood-city-fc"],["Mooroolbark SC","mooroolbark-sc"],["Middle Park FC","middle-park-fc"],["Sandringham SC","sandringham-sc"],["Green Gully SC","green-gully-sc"],["Knox United SC","knox-united-sc"],["Old Ivanhoe SC","old-ivanhoe-sc"],["Skye United FC","skye-united-fc"],["Mount Eliza SC","mount-eliza-sc"],["South Yarra SC","south-yarra-sc"],["Langwarrin SC","langwarrin-sc"],["Riversdale SC","riversdale-sc"],["Knox City FC","knox-city-fc"],["Hume City FC","hume-city-fc"],["Glen Eira FC","glen-eira-fc"],["Aspendale SC","aspendale-sc"],["East Kew FC","east-kew-fc"],["Brighton SC","brighton-sc"],["Boronia SC","boronia-sc"],["Mazenod FC","mazenod-fc"],["Alamein FC","alamein-fc"],["Chelsea FC","chelsea-fc"],["Mentone SC","mentone-sc"],["Baxter SC","baxter-sc"]];
+function clubSlug(team){var tl=team.toLowerCase();for(var i=0;i<CLUBS.length;i++){if(tl.indexOf(CLUBS[i][0].toLowerCase())===0)return CLUBS[i][1];}return null;}
+function logoImg(team){var s=clubSlug(team);return s?'<img class="clogo" src="logos/'+s+'.png" alt="" loading="lazy" title="'+esc(team)+'">':'';}
 function render(){
  let r=DATA.filter(g=>(ground==="All"||g.ground===ground)&&(!date||g.iso===date));
  if(onlyduty)r=r.filter(g=>g.setup||g.packup);
@@ -211,7 +218,7 @@ function render(){
    const away=g.mufc&&!g.home_mufc;
    out+='<div class="gr"><div class="tm">'+g.time+'</div>'+
      '<div class="mid"><div class="fix'+(away?' away':'')+'">'+esc(g.team)+(away?' (AWAY)':'')+'<span class="bd bd-'+bcode(g.band)+'">'+g.band+'</span></div>'+
-     '<div class="sub">'+esc(g.home.replace("Manningham United Blues FC","MUFC"))+' v '+esc(g.away.replace("Manningham United Blues FC","MUFC"))+' &middot; '+esc(g.comp)+'</div></div>'+
+     '<div class="sub">'+esc(g.home.replace("Manningham United Blues FC","MUFC"))+' v '+esc(g.away.replace("Manningham United Blues FC","MUFC"))+' &middot; '+esc(g.comp)+'</div>'+'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div></div>'+
      '<div class="duty">'+duty+tasks+'</div></div>';
  });
  document.getElementById('body').innerHTML=out;
