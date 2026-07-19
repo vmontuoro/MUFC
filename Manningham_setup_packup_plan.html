@@ -152,7 +152,8 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <li>If <b>no line markings</b>, lay yellow <b>flat plates</b></li>
 <li><b>U12/13 only:</b> spare <b>linesman flags</b> in the ref/marshall room</li></ul></div>
 <div class="lbox full"><h3>&#9654; SET UP &mdash; full-pitch football (U14+)</h3><ul>
-<li>First full-pitch game of the day brings out the <b>stretcher</b> (one per ground) &amp; the pitch&rsquo;s <b>corner poles</b></li>
+<li>Every full-pitch game brings out the pitch&rsquo;s <b>corner poles</b></li>
+<li>The <b>stretcher</b> (one per ground) must be out for full-pitch football &mdash; the <b>first</b> game of the day brings it out; later teams just <b>check it&rsquo;s already out</b></li>
 <li>Last full-pitch game puts the <b>stretcher</b> &amp; <b>corner poles</b> away</li></ul></div>
 <div class="lbox pack"><h3>&#9632; PACK UP</h3><ul>
 <li>Last of an age group on a pitch packs up (U7 not followed by U7, U8/9 not by U8/9, U10&ndash;13 not by U10&ndash;13)</li>
@@ -215,6 +216,13 @@ function render(){
  });
  document.getElementById('body').innerHTML=out;
 }
+DATA.forEach(function(g){
+ var st=g.stasks||[];
+ var pole=st.some(function(t){return /corner pole/i.test(t);});
+ var goal=st.some(function(t){return /goal/i.test(t);});
+ var str=st.some(function(t){return /stretcher/i.test(t);});
+ if(g.setup&&pole&&!goal&&!str){g.stasks=['Bring out the stretcher (if not already out)'].concat(st);}
+});
 (function(){
  var isos=[];DATA.forEach(function(g){if(isos.indexOf(g.iso)<0)isos.push(g.iso);});isos.sort();
  var d=new Date(),today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
