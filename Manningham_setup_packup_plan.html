@@ -59,6 +59,10 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 .gtoggle{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
 .gchip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--mut);user-select:none}
 .gchip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.glabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:2px 0 6px}
+.vtabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.vtab{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:.3px;padding:9px 18px;border-radius:10px;border:2px solid var(--line);background:#fff;color:var(--navy);cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.vtab.active{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 3px 10px rgba(31,56,100,.22)}
 .gvenues{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
 .gvenue{flex:0 1 auto;min-width:0;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 2px 14px rgba(16,38,63,.06);overflow-x:auto}
 .gvenue h3{margin:0 0 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.3px;color:#10263F;display:flex;align-items:baseline;gap:10px}
@@ -71,7 +75,7 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <div class="wrap">
 <section id="grounds">
 <h2>Ground layouts</h2>
-<p style="font-size:12.5px;color:var(--mut);margin:0 0 10px">How each full field is divided into mini-pitches by age group. Pick an age band &ndash; Pettys Reserve &amp; Powerful Owl Park are shown side by side.</p>
+<p style="font-size:12.5px;color:var(--mut);margin:0 0 10px">How each ground&rsquo;s fields divide into mini-pitches by age group. Pick a ground, then an age group.</p>
 <div class="glegend">
 <span class="k"><span style="width:22px;height:15px;border-radius:4px;background:repeating-linear-gradient(0deg,#143352 0 4px,#0f2a45 4px 8px);border:1px solid #45B0E3"></span>Grass pitch</span>
 <span class="k"><span style="width:22px;height:15px;border-radius:4px;background:linear-gradient(180deg,#38a7dd,#2c86bd);border:1px solid #fff;box-shadow:inset 0 0 0 1px #7cc9ee"></span>Synthetic pitch</span>
@@ -79,6 +83,9 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <span class="k"><span style="width:22px;height:15px;border-radius:4px;background:repeating-linear-gradient(45deg,#dbe9f5 0 5px,#c3dcef 5px 10px);border:1px dashed #6f8aa5"></span>Car park</span>
 <span class="k"><span style="display:inline-flex;align-items:center;justify-content:center;padding:1px 7px;border-radius:999px;background:rgba(10,27,46,.82);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:11px">1a</span>Mini-pitch within a field</span>
 </div>
+<div class="glabel">Choose a ground</div>
+<div class="vtabs" id="vtabs"></div>
+<div class="glabel">Age group</div>
 <div class="gtoggle" id="gtoggle"></div>
 <div class="gvenues" id="gvenues"></div>
 </section>
@@ -89,14 +96,14 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
  var VENUES=[
   {name:'Pettys Reserve',idx:'01',configs:[
    {carpark:true,pitches:[
-     {name:'Pitch 1',tag:'Bottom Field',surface:'grass',type:'quads',labels:['1a','1c','1b','1d']},
-     {name:'Pitch 2',tag:'Top Field',surface:'grass',type:'quads',labels:['2a','2c','2b','2d']}]},
+     {name:'Pitch 1',tag:'Bottom Field',surface:'synthetic',type:'quads',labels:['1a','1c','1b','1d']},
+     {name:'Pitch 2',tag:'Top Field',surface:'synthetic',type:'quads',labels:['2a','2c','2b','2d']}]},
    {carpark:true,pitches:[
-     {name:'Pitch 1',tag:'Bottom Field',surface:'grass',type:'halves',labels:['1a','1b']},
-     {name:'Pitch 2',tag:'Top Field',surface:'grass',type:'halves',labels:['2a','2b']}]},
+     {name:'Pitch 1',tag:'Bottom Field',surface:'synthetic',type:'halves',labels:['1a','1b']},
+     {name:'Pitch 2',tag:'Top Field',surface:'synthetic',type:'halves',labels:['2a','2b']}]},
    {carpark:true,pitches:[
-     {name:'Pitch 1',tag:'Bottom Field',surface:'grass',type:'full'},
-     {name:'Pitch 2',tag:'Top Field',surface:'grass',type:'full'}]}
+     {name:'Pitch 1',tag:'Bottom Field',surface:'synthetic',type:'full'},
+     {name:'Pitch 2',tag:'Top Field',surface:'synthetic',type:'full'}]}
   ]},
   {name:'Powerful Owl Park',idx:'02',configs:[
    {carpark:false,pitches:[
@@ -104,13 +111,24 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
      {name:'Pitch 2',surface:'grass',type:'quads',labels:['2a','2c','2b','2d']},
      {name:'Pitch 3',surface:'grass',type:'vsplit',labels:['3a','3b'],landscape:true}]},
    {carpark:false,pitches:[
-     {name:'Pitch 1',tag:'Synthetic',surface:'synthetic',type:'full',labels:['1a']},
+     {name:'Pitch 1',tag:'Synthetic',surface:'synthetic',type:'halves',labels:['1a','1b']},
      {name:'Pitch 2',surface:'grass',type:'halves',labels:['2a','2b']},
      {name:'Pitch 3',surface:'grass',type:'vsplit',labels:['3a','3b'],landscape:true}]},
    {carpark:false,pitches:[
      {name:'Pitch 1',tag:'Synthetic',surface:'synthetic',type:'full'},
      {name:'Pitch 2',surface:'grass',type:'full'},
      {name:'Pitch 3',surface:'grass',type:'full',landscape:true}]}
+  ]},
+  {name:'Timber Ridge Reserve',idx:'03',configs:[
+   {carpark:false,oval:true,pitches:[
+     {name:'Pitch 1',surface:'grass',type:'quads',labels:['1a','1c','1b','1d']},
+     {name:'Pitch 2',surface:'grass',type:'quads',labels:['2a','2c','2b','2d']}]},
+   {carpark:false,oval:true,pitches:[
+     {name:'Pitch 1',surface:'grass',type:'halves',labels:['1a','1b']},
+     {name:'Pitch 2',surface:'grass',type:'halves',labels:['2a','2b']}]},
+   {carpark:false,oval:true,pitches:[
+     {name:'Pitch 1',surface:'grass',type:'full'},
+     {name:'Pitch 2',surface:'grass',type:'full'}]}
   ]}
  ];
  var BTN=['U7 – U9','U10 – U13','U14 +'];
@@ -122,7 +140,7 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
   else{cells=[{label:(p.labels&&p.labels[0])||''}];}
   var syn=p.surface==='synthetic',ls=!!p.landscape;
   return {name:p.name,tag:p.tag||'',cols:cols,rows:rows,cells:cells,dividers:dividers,landscape:ls,
-   wPx:ls?'196px':'116px',hPx:ls?'112px':'184px',fieldBg:syn?synthBg:grassBg,
+   wPx:ls?'224px':'132px',hPx:ls?'128px':'210px',fieldBg:syn?synthBg:grassBg,
    dividerColor:syn?'rgba(255,255,255,0.9)':'rgba(124,201,238,0.9)',
    markStroke:syn?'rgba(255,255,255,0.72)':'rgba(255,255,255,0.5)'};
  }
@@ -139,18 +157,27 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
    +'<div style="position:relative;border-radius:10px;overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:0 3px 12px rgba(16,38,63,.22);width:'+m.wPx+';height:'+m.hPx+';background:'+m.fieldBg+'">'+mark(m)+dv
    +'<div style="position:absolute;inset:0;display:grid;grid-template-columns:repeat('+m.cols+',1fr);grid-template-rows:repeat('+m.rows+',1fr)">'+cs+'</div></div></div>';
  }
- var PAV='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:64px;height:84px;background:linear-gradient(180deg,#4fb4e5,#2c86bd);border-radius:12px;color:#fff;box-shadow:0 3px 10px rgba(44,134,189,.35)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v9h14v-9"></path><path d="M10 19v-5h4v5"></path></svg><span style="font-family:\'Barlow Condensed\',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px">Pavilion</span></div>';
+ var PAV='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:74px;height:96px;background:linear-gradient(180deg,#4fb4e5,#2c86bd);border-radius:12px;color:#fff;box-shadow:0 3px 10px rgba(44,134,189,.35)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v9h14v-9"></path><path d="M10 19v-5h4v5"></path></svg><span style="font-family:\'Barlow Condensed\',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px">Pavilion</span></div>';
  var CAR='<div style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:52px;border-radius:10px;background:repeating-linear-gradient(45deg,#e6f0f9 0 8px,#d3e5f4 8px 16px);border:2px dashed #6f8aa5;color:#33506b;margin-top:14px"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:#10263F;color:#fff;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:16px">P</span><span style="font-family:\'Barlow Condensed\',sans-serif;font-weight:600;font-size:18px;letter-spacing:1px;text-transform:uppercase">Car Park</span></div>';
+ var OVALPAV='<div style="position:absolute;bottom:18px;left:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:70px;height:88px;background:linear-gradient(180deg,#4fb4e5,#2c86bd);border-radius:12px;color:#fff;box-shadow:0 3px 10px rgba(16,38,63,.35);z-index:2"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v9h14v-9"></path><path d="M10 19v-5h4v5"></path></svg><span style="font-family:\'Barlow Condensed\',sans-serif;font-weight:600;font-size:12px;letter-spacing:.4px;text-align:center;line-height:1.05">Pavilion &amp; Stand</span></div>';
+ var OVALROW='position:relative;display:flex;align-items:center;justify-content:center;gap:30px;padding:44px 70px;background:radial-gradient(circle at 50% 50%,#3a8a52,#2f7345);border:5px solid #fff;border-radius:50%/38%;box-shadow:0 6px 24px rgba(16,38,63,.18);max-width:100%';
  function venue(v,bi){
   var cfg=v.configs[bi],items='';
+  if(cfg.oval){
+   cfg.pitches.forEach(function(p){items+=pitch(p);});
+   return '<div class="gvenue"><h3><span class="ix">'+v.idx+'</span>'+v.name+'</h3><div style="'+OVALROW+'">'+OVALPAV+items+'</div>'+(cfg.carpark?CAR:'')+'</div>';
+  }
   cfg.pitches.forEach(function(p,i){items+=pitch(p);if(i===0)items+=PAV;});
   return '<div class="gvenue"><h3><span class="ix">'+v.idx+'</span>'+v.name+'</h3><div class="grow">'+items+'</div>'+(cfg.carpark?CAR:'')+'</div>';
  }
- var sel=0,tog=document.getElementById('gtoggle'),host=document.getElementById('gvenues');
+ var sel=0,selV=0,tog=document.getElementById('gtoggle'),vt=document.getElementById('vtabs'),host=document.getElementById('gvenues');
  function render(){
-  host.innerHTML=VENUES.map(function(v){return venue(v,sel);}).join('');
+  host.innerHTML=venue(VENUES[selV],sel);
   [].forEach.call(tog.children,function(b,i){b.classList.toggle('active',i===sel);});
+  [].forEach.call(vt.children,function(b,i){b.classList.toggle('active',i===selV);});
  }
+ vt.innerHTML=VENUES.map(function(v,i){return '<span class="vtab'+(i===0?' active':'')+'" data-i="'+i+'">'+v.name+'</span>';}).join('');
+ [].forEach.call(vt.children,function(b){b.onclick=function(){selV=+b.getAttribute('data-i');render();};});
  tog.innerHTML=BTN.map(function(t,i){return '<span class="gchip'+(i===0?' active':'')+'" data-i="'+i+'">'+t+'</span>';}).join('');
  [].forEach.call(tog.children,function(b){b.onclick=function(){sel=+b.getAttribute('data-i');render();};});
  render();
