@@ -44,6 +44,8 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 .glegend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:12px;color:var(--mut);margin:2px 0 12px;align-items:center}
 .glegend .k{display:inline-flex;align-items:center;gap:6px}
 .gtoggle{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.gchip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--mut);user-select:none}
+.gchip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 .gvenues{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
 .gvenue{flex:0 1 auto;min-width:0;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 2px 14px rgba(16,38,63,.06);overflow-x:auto}
 .gvenue h3{margin:0 0 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.3px;color:#10263F;display:flex;align-items:baseline;gap:10px}
@@ -136,7 +138,7 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
   host.innerHTML=VENUES.map(function(v){return venue(v,sel);}).join('');
   [].forEach.call(tog.children,function(b,i){b.classList.toggle('active',i===sel);});
  }
- tog.innerHTML=BTN.map(function(t,i){return '<span class="chip'+(i===0?' active':'')+'" data-i="'+i+'">'+t+'</span>';}).join('');
+ tog.innerHTML=BTN.map(function(t,i){return '<span class="gchip'+(i===0?' active':'')+'" data-i="'+i+'">'+t+'</span>';}).join('');
  [].forEach.call(tog.children,function(b){b.onclick=function(){sel=+b.getAttribute('data-i');render();};});
  render();
 })();
@@ -213,5 +215,11 @@ function render(){
  });
  document.getElementById('body').innerHTML=out;
 }
+(function(){
+ var isos=[];DATA.forEach(function(g){if(isos.indexOf(g.iso)<0)isos.push(g.iso);});isos.sort();
+ var d=new Date(),today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ var pick=null;for(var i=0;i<isos.length;i++){if(isos[i]>=today){pick=isos[i];break;}}
+ if(pick){date=pick;dsel.value=pick;}
+})();
 render();
 </script></body></html>
