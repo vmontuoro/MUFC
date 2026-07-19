@@ -175,7 +175,6 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <div class="controls"><select id="gsel"><option value="All">All grounds</option><option value="Pettys Reserve">Pettys</option><option value="Powerful Owl Park">Powerful Owl</option><option value="Timber Ridge Reserve">Timber Ridge</option></select>
 <select id="tsel"><option value="">All teams</option></select>
 <select id="dsel"><option value="">All dates</option></select>
-<label class="only"><input type="checkbox" id="only"> Only games with a duty</label>
 <input type="search" id="q" placeholder="Search team, competition, pitch, age…">
 <span class="count" id="count"></span></div>
 <div id="body"></div>
@@ -189,7 +188,7 @@ document.getElementById('cards').innerHTML=
  '<div class="card"><div class="n">'+DATA.length+'</div><div class="l">Games (17 Jul → season end)</div></div>'+
  '<div class="card"><div class="n" style="color:#1e7d46">'+DATA.filter(g=>g.setup).length+'</div><div class="l">Set-up duties</div></div>'+
  '<div class="card"><div class="n" style="color:#b45309">'+DATA.filter(g=>g.packup).length+'</div><div class="l">Pack-up duties</div></div>';
-let ground="All",date="",onlyduty=false,q="",team="";
+let ground="All",date="",q="",team="";
 function shortTeam(t){var s=t.replace(/^MUFC\s+/,'').replace(/\s*MUFC\s*-\s*/g,' - ').replace(/\s+/g,' ').trim();return s||t;}
 document.getElementById('gsel').onchange=function(e){ground=e.target.value;render();};
 (function(){var seen={},ts=document.getElementById('tsel'),arr=[];
@@ -201,7 +200,6 @@ document.getElementById('gsel').onchange=function(e){ground=e.target.value;rende
 const dseen=new Set(),dsel=document.getElementById('dsel');
 DATA.forEach(g=>{if(!dseen.has(g.iso)){dseen.add(g.iso);const o=document.createElement('option');o.value=g.iso;o.textContent=g.datedisp;dsel.appendChild(o);}});
 dsel.onchange=e=>{date=e.target.value;render();};
-document.getElementById('only').onchange=e=>{onlyduty=e.target.checked;render();};
 document.getElementById('q').oninput=e=>{q=e.target.value.toLowerCase();render();};
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 var CLUBS=[["Westside Strikers Caroline Springs FC","westside-strikers-caroline-springs-fc"],["Hampton Park United Sparrows FC","hampton-park-united-sparrows-fc"],["Lilydale Montrose United FC","lilydale-montrose-united-fc"],["Bentleigh United Cobras FC","bentleigh-united-cobras-fc"],["Manningham United Blues FC","manningham-united-blues-fc"],["Monash City Villarreal FC","monash-city-villarreal-fc"],["Hampton East Brighton FC","hampton-east-brighton-fc"],["Geelong Galaxy United FC","geelong-galaxy-united-fc"],["Barnstoneworth United FC","barnstoneworth-united-fc"],["Keysborough District FC","keysborough-district-fc"],["East Malvern Junior SC","east-malvern-junior-sc"],["Manningham Juventus FC","manningham-juventus-fc"],["Melbourne Victory FC","melbourne-victory-fc"],["Melbourne City - NPL","melbourne-city-npl"],["Bayside Argonauts FC","bayside-argonauts-fc"],["Maccabi FC Caulfield","maccabi-fc-caulfield"],["Footscray Rangers FC","footscray-rangers-fc"],["Boroondara Eagles FC","boroondara-eagles-fc"],["Bunyip & District SC","bunyip-district-sc"],["Whittlesea United SC","whittlesea-united-sc"],["Whitehorse United SC","whitehorse-united-sc"],["Melbourne Knights FC","melbourne-knights-fc"],["Bentleigh Greens SC","bentleigh-greens-sc"],["Ashburton United SC","ashburton-united-sc"],["Doncaster Rovers SC","doncaster-rovers-sc"],["Hoppers Crossing SC","hoppers-crossing-sc"],["Collingwood City FC","collingwood-city-fc"],["Endeavour United SC","endeavour-united-sc"],["Oakleigh Cannons FC","oakleigh-cannons-fc"],["South Melbourne FC","south-melbourne-fc"],["Eltham Redbacks FC","eltham-redbacks-fc"],["Essendon Royals SC","essendon-royals-sc"],["Pakenham United FC","pakenham-united-fc"],["Frankston Pines SC","frankston-pines-sc"],["Southern United FC","southern-united-fc"],["Nunawading City FC","nunawading-city-fc"],["Old Melburnians SC","old-melburnians-sc"],["Northcote City FC","northcote-city-fc"],["Croydon Ranges SC","croydon-ranges-sc"],["Darebin Womens SC","darebin-womens-sc"],["Dandenong City SC","dandenong-city-sc"],["Port Melbourne SC","port-melbourne-sc"],["FC Bulleen Lions","fc-bulleen-lions"],["Waverley City SC","waverley-city-sc"],["Eastern Lions SC","eastern-lions-sc"],["Doreen United SC","doreen-united-sc"],["Ringwood City FC","ringwood-city-fc"],["Fitzroy Lions SC","fitzroy-lions-sc"],["Brandon Park SC","brandon-park-sc"],["Croydon City SC","croydon-city-sc"],["Malvern City FC","malvern-city-fc"],["Berwick City SC","berwick-city-sc"],["Mount Martha SC","mount-martha-sc"],["FC Clifton Hill","fc-clifton-hill"],["Burwood City FC","burwood-city-fc"],["Mooroolbark SC","mooroolbark-sc"],["Middle Park FC","middle-park-fc"],["Sandringham SC","sandringham-sc"],["Green Gully SC","green-gully-sc"],["Knox United SC","knox-united-sc"],["Old Ivanhoe SC","old-ivanhoe-sc"],["Skye United FC","skye-united-fc"],["Mount Eliza SC","mount-eliza-sc"],["South Yarra SC","south-yarra-sc"],["Langwarrin SC","langwarrin-sc"],["Riversdale SC","riversdale-sc"],["Knox City FC","knox-city-fc"],["Hume City FC","hume-city-fc"],["Glen Eira FC","glen-eira-fc"],["Aspendale SC","aspendale-sc"],["East Kew FC","east-kew-fc"],["Brighton SC","brighton-sc"],["Boronia SC","boronia-sc"],["Mazenod FC","mazenod-fc"],["Alamein FC","alamein-fc"],["Chelsea FC","chelsea-fc"],["Mentone SC","mentone-sc"],["Baxter SC","baxter-sc"]];
@@ -209,7 +207,6 @@ function clubSlug(team){var tl=team.toLowerCase();for(var i=0;i<CLUBS.length;i++
 function logoImg(team){var s=clubSlug(team);return s?'<img class="clogo" src="logos/'+s+'.png" alt="" loading="lazy" title="'+esc(team)+'">':'';}
 function render(){
  let r=DATA.filter(g=>(ground==="All"||g.ground===ground)&&(!date||g.iso===date)&&(!team||g.team===team));
- if(onlyduty)r=r.filter(g=>g.setup||g.packup);
  if(q)r=r.filter(g=>(g.home+' '+g.away+' '+g.comp+' '+g.pitch+' '+g.age+' '+g.band+' '+g.team+' '+g.datedisp).toLowerCase().includes(q));
  document.getElementById('count').textContent=r.length+' games';
  let out='',lastd='',lastp='';
