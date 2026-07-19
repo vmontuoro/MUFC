@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manningham United Blues – Fixtures Hub</title>
+<style>
+:root{--navy:#1f3864;--blue:#2e5aac;--ink:#1a1a1a;--mut:#5a6472;--line:#e3e7ee;--band:#f6f8fb;}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fbfcfe}
+header{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:34px 22px}
+header h1{margin:0 0 6px;font-size:24px}
+header p{margin:0;opacity:.85;font-size:13.5px}
+.wrap{max-width:960px;margin:0 auto;padding:26px 22px 70px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:6px}
+a.card{display:block;text-decoration:none;color:inherit;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;transition:transform .12s ease,box-shadow .12s ease}
+a.card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(31,56,100,.12);border-color:#c9d4e8}
+a.card .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--blue);border-radius:6px;padding:2px 8px;margin-bottom:10px}
+a.card.x .tag{background:#1e7d46}
+a.card h2{margin:0 0 6px;font-size:16.5px;color:var(--navy)}
+a.card p{margin:0;font-size:13px;color:var(--mut);line-height:1.5}
+a.card .go{margin-top:12px;font-size:12.5px;font-weight:600;color:var(--blue)}
+.foot{color:var(--mut);font-size:11.5px;margin-top:30px;line-height:1.6}
+</style></head><body>
+<header>
+<h1>Manningham United Blues &ndash; Fixtures Hub</h1>
+<p>Home-ground schedule, overlap checks &amp; match-day duties &middot; Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve</p>
+</header>
+<div class="wrap">
+<div class="grid">
+
+<a class="card" href="Manningham_setup_packup_plan.html">
+<span class="tag">Match day</span>
+<h2>Pitch Setup &amp; Pack-up Plan</h2>
+<p>Who sets up and packs up each pitch, every game day. Goals, corner poles, flat plates, linesman flags and the full-pitch stretcher &ndash; filter by date &amp; ground, print a run sheet.</p>
+<div class="go">Open the plan &rarr;</div>
+</a>
+
+<a class="card" href="Manningham_schedule_clashes.html">
+<span class="tag">Rules check</span>
+<h2>Schedule &amp; Pitch-Rule Clashes</h2>
+<p>Every fixture 17 Jul &rarr; season end, checked against the pitch-capacity rules (U14+ exclusive, max 2&times;U10-13, max 4&times;U8/9, U8/9 location bans). Flags any potential clash.</p>
+<div class="go">Open the clash check &rarr;</div>
+</a>
+
+<a class="card" href="Manningham_fixtures.html">
+<span class="tag">Full season</span>
+<h2>Fixtures &amp; Overlap Check</h2>
+<p>All home fixtures with a field double-booking check and a peak-load view (how many games run at once per ground). Filterable and sortable.</p>
+<div class="go">Open the fixtures list &rarr;</div>
+</a>
+
+<a class="card x" href="Manningham_fixtures_and_overlaps.xlsx">
+<span class="tag">Download</span>
+<h2>Spreadsheet (Excel)</h2>
+<p>All games plus the overlap analysis and peak-load tabs, as an .xlsx you can sort, filter and share offline.</p>
+<div class="go">Download the spreadsheet &darr;</div>
+</a>
+
+</div>
+<div class="foot">
+Data source: fv.dribl.com (2026 season). Static page &ndash; refresh by regenerating and re-uploading the files.<br>
+To publish: put all these files in one GitHub repo and enable Settings &rarr; Pages. This page (index.html) becomes your homepage.
+</div>
+</div>
+</body></html>

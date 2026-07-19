@@ -1,0 +1,11 @@
+# Ignore everything by default...
+/*
+
+# ...then publish only the static site files
+!.gitignore
+!README.md
+!index.html
+!Manningham_setup_packup_plan.html
+!Manningham_schedule_clashes.html
+!Manningham_fixtures.html
+!Manningham_fixtures_and_overlaps.xlsx
