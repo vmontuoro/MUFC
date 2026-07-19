@@ -9,3 +9,8 @@
 !Manningham_schedule_clashes.html
 !Manningham_fixtures.html
 !Manningham_fixtures_and_overlaps.xlsx
+
+# PRIVATE — never publish. Confidential officials list & any merged manager pages.
+# (Already excluded by the /* rule above; listed explicitly as a safeguard.)
+TeamOfficials_*.csv
+*_PRIVATE.*

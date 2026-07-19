@@ -19,7 +19,8 @@ h2{font-size:15px;color:var(--navy);margin:26px 0 10px;border-bottom:2px solid v
 .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--mut)}
 .chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 select#dsel{border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;background:#fff;cursor:pointer;max-width:180px}
-label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:5px;cursor:pointer}
+input#q{border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;min-width:160px}
+label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
 .count{font-size:12px;color:var(--mut)}
 .dhead{font-size:16px;font-weight:700;color:var(--navy);margin:22px 0 8px;border-bottom:2px solid var(--navy);padding-bottom:4px}
 .pitchblk{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden}
@@ -66,6 +67,7 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <div class="controls"><span id="chips"></span>
 <select id="dsel"><option value="">All dates</option></select>
 <label class="only"><input type="checkbox" id="only"> Only games with a duty</label>
+<input type="search" id="q" placeholder="Search team, competition, pitch, age…">
 <span class="count" id="count"></span></div>
 <div id="body"></div>
 <div class="foot">Generated from Dribl fixtures. Each labelled sub-pitch (1A, 1B, Midi A&hellip;) is its own surface. Stretcher = one per ground (earliest full-pitch game brings it out); corner poles are per pitch. Away games (e.g. Timber Ridge) are the host club&rsquo;s responsibility. Verify against actual kickoff order on the day.</div>
@@ -78,7 +80,7 @@ document.getElementById('cards').innerHTML=
  '<div class="card"><div class="n">'+DATA.length+'</div><div class="l">Games (17 Jul → season end)</div></div>'+
  '<div class="card"><div class="n" style="color:#1e7d46">'+DATA.filter(g=>g.setup).length+'</div><div class="l">Set-up duties</div></div>'+
  '<div class="card"><div class="n" style="color:#b45309">'+DATA.filter(g=>g.packup).length+'</div><div class="l">Pack-up duties</div></div>';
-let ground="All",date="",onlyduty=false;
+let ground="All",date="",onlyduty=false,q="";
 const chips=["All","Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve"];
 document.getElementById('chips').innerHTML=chips.map(c=>'<span class="chip'+(c==='All'?' active':'')+'" data-g="'+c+'">'+(c==='All'?'All grounds':gsh(c))+'</span>').join('');
 document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{ground=el.dataset.g;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===el));render();});
@@ -86,10 +88,12 @@ const dseen=new Set(),dsel=document.getElementById('dsel');
 DATA.forEach(g=>{if(!dseen.has(g.iso)){dseen.add(g.iso);const o=document.createElement('option');o.value=g.iso;o.textContent=g.datedisp;dsel.appendChild(o);}});
 dsel.onchange=e=>{date=e.target.value;render();};
 document.getElementById('only').onchange=e=>{onlyduty=e.target.checked;render();};
+document.getElementById('q').oninput=e=>{q=e.target.value.toLowerCase();render();};
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function render(){
  let r=DATA.filter(g=>(ground==="All"||g.ground===ground)&&(!date||g.iso===date));
  if(onlyduty)r=r.filter(g=>g.setup||g.packup);
+ if(q)r=r.filter(g=>(g.home+' '+g.away+' '+g.comp+' '+g.pitch+' '+g.age+' '+g.band+' '+g.team+' '+g.datedisp).toLowerCase().includes(q));
  document.getElementById('count').textContent=r.length+' games';
  let out='',lastd='',lastp='';
  r.forEach(g=>{
