@@ -16,3 +16,4 @@
 # (Already excluded by the /* rule above; listed explicitly as a safeguard.)
 TeamOfficials_*.csv
 *_PRIVATE.*
+!duties_data.js
