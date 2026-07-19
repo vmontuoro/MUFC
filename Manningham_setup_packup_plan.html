@@ -40,6 +40,12 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 .tag.s{background:var(--greenbg);color:var(--green)}.tag.p{background:var(--orangebg);color:var(--orange)}
 .tasks{margin:4px 0 0;padding-left:16px;color:#333}
 .tasks.p{color:#7a4a08}
+.dt{display:block;margin:0 0 4px}
+.dt>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:7px;user-select:none;-webkit-tap-highlight-color:transparent}
+.dt>summary::-webkit-details-marker{display:none}
+.dt>summary::after{content:'\25B8 tap for tasks';font-size:10px;font-weight:600;color:var(--mut)}
+.dt[open]>summary::after{content:'\25BE hide'}
+.dt[open]{margin-bottom:8px}
 .away{color:var(--mut);font-style:italic}
 .logos{display:flex;align-items:center;gap:8px;margin-top:6px}
 .clogo{height:30px;width:30px;object-fit:contain;border-radius:4px;background:#fff;border:1px solid var(--line);padding:2px}
@@ -65,7 +71,7 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <div class="wrap">
 <section id="grounds">
 <h2>Ground layouts</h2>
-<p style="font-size:12.5px;color:var(--mut);margin:0 0 10px">How each full field is divided into mini-pitches by age group. Pick an age band &ndash; Pettys Reserve &amp; Powerful Owl Park are shown side by side. <span class="away">(Timber Ridge is an away/host-run ground.)</span></p>
+<p style="font-size:12.5px;color:var(--mut);margin:0 0 10px">How each full field is divided into mini-pitches by age group. Pick an age band &ndash; Pettys Reserve &amp; Powerful Owl Park are shown side by side.</p>
 <div class="glegend">
 <span class="k"><span style="width:22px;height:15px;border-radius:4px;background:repeating-linear-gradient(0deg,#143352 0 4px,#0f2a45 4px 8px);border:1px solid #45B0E3"></span>Grass pitch</span>
 <span class="k"><span style="width:22px;height:15px;border-radius:4px;background:linear-gradient(180deg,#38a7dd,#2c86bd);border:1px solid #fff;box-shadow:inset 0 0 0 1px #7cc9ee"></span>Synthetic pitch</span>
@@ -215,17 +221,14 @@ function render(){
    const pk=g.ground+'|'+g.pitch;
    if(pk!==lastp){lastp=pk;out+='<div class="pitchblk"><div class="pitchhd">'+gsh(g.ground)+' &middot; '+esc(g.pitch)+'</div>';}
    let duty='';
-   if(g.setup)duty+='<span class="tag s">SET UP</span>';
-   if(g.packup)duty+='<span class="tag p">PACK UP</span>';
+   if(g.setup)duty+='<details class="dt"><summary><span class="tag s">SET UP</span></summary>'+(g.stasks.length?'<ul class="tasks">'+g.stasks.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'')+'</details>';
+   if(g.packup)duty+='<details class="dt"><summary><span class="tag p">PACK UP</span></summary>'+(g.ptasks.length?'<ul class="tasks p">'+g.ptasks.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'')+'</details>';
    if(!duty)duty='<span class="sub">kit already out</span>';
-   let tasks='';
-   if(g.stasks.length)tasks+='<ul class="tasks">'+g.stasks.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>';
-   if(g.ptasks.length)tasks+='<ul class="tasks p">'+g.ptasks.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>';
    const away=g.mufc&&!g.home_mufc;
    out+='<div class="gr"><div class="tm">'+g.time+'</div>'+
      '<div class="mid"><div class="fix'+(away?' away':'')+'">'+esc(g.team)+(away?' (AWAY)':'')+'<span class="bd bd-'+bcode(g.band)+'">'+g.band+'</span></div>'+
      '<div class="sub">'+esc(g.home.replace("Manningham United Blues FC","MUFC"))+' v '+esc(g.away.replace("Manningham United Blues FC","MUFC"))+' &middot; '+esc(g.comp)+'</div>'+'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div></div>'+
-     '<div class="duty">'+duty+tasks+'</div></div>';
+     '<div class="duty">'+duty+'</div></div>';
  });
  document.getElementById('body').innerHTML=out;
 }
@@ -243,4 +246,6 @@ DATA.forEach(function(g){
  if(pick){date=pick;dsel.value=pick;}
 })();
 render();
+window.addEventListener('beforeprint',function(){document.querySelectorAll('.dt').forEach(function(d){d.dataset.wasopen=d.open?'1':'0';d.open=true;});});
+window.addEventListener('afterprint',function(){document.querySelectorAll('.dt').forEach(function(d){d.open=d.dataset.wasopen==='1';});});
 </script></body></html>
