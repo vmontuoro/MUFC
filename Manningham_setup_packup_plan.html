@@ -258,8 +258,8 @@ function render(){
    if(!duty)duty='<span class="sub">kit already out</span>';
    const away=g.mufc&&!g.home_mufc;
    out+='<div class="gr"><div class="tm">'+g.time+'</div>'+
-     '<div class="mid"><div class="fix'+(away?' away':'')+'">'+esc(g.team)+(away?' (AWAY)':'')+'<span class="bd bd-'+bcode(g.band)+'">'+g.band+'</span></div>'+
-     '<div class="sub">v '+esc((g.home_mufc?g.away:g.home).replace("Manningham United Blues FC","MUFC"))+'</div>'+'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div></div>'+
+     '<div class="mid"><div class="fix'+(away?' away':'')+'">'+esc(g.home.replace("Manningham United Blues FC","MUFC"))+' v '+esc(g.away.replace("Manningham United Blues FC","MUFC"))+(away?' (AWAY)':'')+'<span class="bd bd-'+bcode(g.band)+'">'+g.band+'</span></div>'+
+     '<div class="sub">'+esc(g.comp)+'</div>'+'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div></div>'+
      '<div class="duty">'+duty+'</div></div>';
  });
  document.getElementById('body').innerHTML=out;
