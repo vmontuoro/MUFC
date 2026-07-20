@@ -52,6 +52,9 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 .away{color:var(--mut);font-style:italic}
 .logos{display:flex;align-items:center;gap:8px;margin-top:6px}
 .clogo{height:48px;width:48px;object-fit:contain;border-radius:4px;background:#fff;border:1px solid var(--line);padding:2px}
+.cr{font-size:12px;font-weight:600;color:var(--navy);margin-top:5px}
+.cr b{color:var(--blue)}
+.cr.clash,.cr.clash b{color:#c0392b}
 .logos .vs{font-size:11px;color:var(--mut);font-weight:600}
 @media print{.clogo{height:41px;width:41px}}
 .foot{color:var(--mut);font-size:11px;margin-top:22px}
@@ -260,7 +263,7 @@ function render(){
    out+='<div class="gr"><div class="tm">'+g.time+'</div>'+
      '<div class="mid"><div class="fix'+(away?' away':'')+'">'+esc(g.home.replace("Manningham United Blues FC","MUFC"))+' v<span class="bd bd-'+bcode(g.band)+'">'+g.band+'</span></div>'+
      '<div class="fix'+(away?' away':'')+'">'+esc(g.away.replace("Manningham United Blues FC","MUFC"))+(away?' (AWAY)':'')+'</div>'+
-     '<div class="sub">'+esc(g.comp)+'</div>'+'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div></div>'+
+     '<div class="sub">'+esc(g.comp)+'</div>'+(g.home_cr?'<div class="cr'+(g.cr_clash?' clash':'')+'">Change rooms &mdash; Home <b>CR'+g.home_cr+'</b> &middot; Away <b>CR'+g.away_cr+'</b>'+(g.cr_clash?' &nbsp;&#9888; overlap':'')+'</div>':(g.cr_clash?'<div class="cr clash">&#9888; Change-room clash &mdash; no free room</div>':''))+'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div></div>'+
      '<div class="duty">'+duty+'</div></div>';
  });
  document.getElementById('body').innerHTML=out;
