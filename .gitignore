@@ -17,3 +17,15 @@
 TeamOfficials_*.csv
 *_PRIVATE.*
 !duties_data.js
+
+# ---- Build pipeline (generators + current raw dumps) & refresh skill: versioned for backup ----
+# Only the .py generators + raw_*.txt are tracked; experiment junk (parts/, *.b64, *.lines,
+# __pycache__) and machine-local .claude/settings stay out.
+!build/
+build/*
+!build/*.py
+!build/raw_*.txt
+!.claude/
+.claude/*
+!.claude/skills/
+!.claude/skills/**
