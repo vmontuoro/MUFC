@@ -15,10 +15,10 @@ def duration(t,comp):
     if re.search(r'U18\b',t): return 110
     if re.search(r'U1[67]\b',t): return 100
     if re.search(r'U15\b',t): return 90
-    if re.search(r'U1[234]\b',t): return 80
-    if re.search(r'U1[01]\b',t): return 70
-    if "MiniRoos" in t or re.search(r'U0[6-9]\b',t): return 50
-    return 80
+    if re.search(r'U1[234]\b',t): return 75
+    if re.search(r'U1[01]\b',t): return 65
+    if "MiniRoos" in t or re.search(r'U0[6-9]\b',t): return 45
+    return 75
 def age_token(t):
     if "17/18" in t: return "U17/18"
     m=re.search(r'(U\d{2}|Seniors|Reserves)',t); return m.group(1) if m else ""
@@ -33,7 +33,7 @@ def category(age,comp):
     if age in ("U08","U09"): return "SMALL"
     if age in ("U10","U11","U12","U13"): return "MID"
     return "BIG"
-UNIT={"TINY":.25,"SMALL":.25,"AAL":.25,"MID":.5,"BIG":1.0}
+UNIT={"TINY":.25,"SMALL":.25,"AAL":.5,"MID":.5,"BIG":1.0}
 CATLABEL={"TINY":"U6/7","SMALL":"U8/9","MID":"U10-13","BIG":"U14+","AAL":"All-Abilities"}
 import manual_games
 games=[]
@@ -208,10 +208,10 @@ tr.clashrow td{background:#fdeceb!important}
 <h2>Pitch capacity rules applied</h2>
 <div class="rules">
 A full pitch = <b>1.0</b>. &nbsp; <b>U14 &amp; older</b> = whole pitch (must be alone). &nbsp; <b>U10&ndash;U13</b> = &frac12; each (max 2). &nbsp;
-<b>U8/9</b> = &frac14; each (max 4). &nbsp; <b>U6/7</b> = &frac14; each. &nbsp; All-Abilities treated as &frac14;.<br>
-Allowed combos on one pitch at the same time: 2&times;U10-13 &nbsp;|&nbsp; 1&times;U10-13 + up to 2&times;U8/9 &nbsp;|&nbsp; up to 4&times;U8/9 &nbsp;|&nbsp; 2&times;U6/7 + 2&times;U8/9.<br>
+<b>U7/8/9</b> = &frac14; each (max 4). &nbsp; All-Abilities treated as &frac12;.<br>
+Allowed combos on one pitch at the same time: 2&times;U10-13 &nbsp;|&nbsp; 1&times;U10-13 + up to 2&times;U7-9 &nbsp;|&nbsp; up to 4&times;U8/9 &nbsp;|&nbsp; 2&times;U6/7 + 2&times;U8/9.<br>
 <b>Location ban:</b> U8/9 may not play at Timber Ridge, or on Powerful Owl Park pitches 2 &amp; 3. &nbsp;
-<span style="color:#667">(Overlap uses match + warm-up windows: All-Abilities 40m, U6&ndash;9 50m, U10&ndash;11 70m, U12&ndash;14 80m, U15 90m, U16&ndash;17 100m, U18 110m, Seniors/U20&ndash;23 120m. "Pitch" = physical field.)</span>
+<span style="color:#667">(Overlap uses match + warm-up windows: All-Abilities 40m, U6&ndash;9 45m, U10&ndash;11 65m, U12&ndash;14 75m, U15 90m, U16&ndash;17 100m, U18 110m, Seniors/U20&ndash;23 120m. "Pitch" = physical field.)</span>
 </div>
 <h2 id="clashhead">Potential clashes</h2>
 <div id="issues"></div>
