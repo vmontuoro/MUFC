@@ -18,7 +18,22 @@ After running, commit & push those changed files.
 """
 import subprocess, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 GENS = ["gen_duties.py", "gen_fixtures.py", "gen_clashes.py", "gen_xlsx.py"]
+
+# Manual fixture overrides survive a refresh — surface them so the human can decide per date
+# whether Dribl's fresh data has superseded them (see the refresh-fixtures skill).
+try:
+    import overrides
+    _d = overrides.dates()
+    if _d:
+        print("!! MANUAL OVERRIDES PRESENT — confirm per date before publishing:")
+        for iso in sorted(_d):
+            print(f"     {iso}: {_d[iso]} game(s) moved")
+        print("   Keep them, or drop dates FV has now actioned, by editing build/overrides.json.\n")
+except Exception as e:
+    print(f"  (overrides check skipped: {e})")
+
 ok = True
 for g in GENS:
     print(f"\n=== {g} ===")

@@ -50,6 +50,11 @@ for ground,path in files.items():
         games.append(dict(date=d,iso=d.isoformat(),datedisp=d.strftime("%a %d %b"),time=time_s,start=start,
             end=start+dur,endt=fmt(start+dur),ground=ground,field=num,pitch=plabel,age=age or ("AAL" if cat=="AAL" else ""),
             cat=cat,catlabel=CATLABEL[cat],unit=UNIT[cat],home=home,away=away,comp=cp[0],grade=cp[1] if len(cp)>1 else "",rnd=rnd.replace("Round ","R")))
+import overrides as _ovr
+def gkey_of(g):
+    """Stable id for one fixture row — must be reproducible client-side from a DATA row."""
+    return "|".join([g["iso"],g["ground"],g["pitch"],g["time"],g["home"]])
+_napplied=_ovr.apply(games,gkey_of)   # apply saved moves BEFORE clash detection
 issues=[]; buckets={}
 for g in games: buckets.setdefault((g["ground"],g["iso"],g["field"]),[]).append(g)
 def desc(g): return f'{g["time"]} {g["catlabel"]} {g["pitch"]} ({g["home"].replace("Manningham United Blues FC","MUFC")} v {g["away"]})'
@@ -98,8 +103,10 @@ def opts_for(mv,need_empty=False):
         team=g["home"].replace("Manningham United Blues FC","MUFC")
         for gr,fl,empty in alternatives(g,need_empty):
             note="" if empty else " (shares pitch, within capacity)"
-            opts.append(dict(date=g["datedisp"],team=team,opp=g["away"],cat=g["catlabel"],comp=g["comp"],
+            opts.append(dict(date=g["datedisp"],iso=g["iso"],team=team,opp=g["away"],cat=g["catlabel"],comp=g["comp"],
                 frm_g=gsh_py(g["ground"]),frm_p=g["pitch"],frm_t=g["time"],to_g=gsh_py(gr),to_p="Pitch "+fl,
+                # gkey must match a DATA row exactly: full ground name + unmodified home team
+                gkey=gkey_of(g),to_ground=gr,to_field=fl,
                 label="Move "+g["catlabel"]+" "+team+" v "+g["away"]+" → "+gsh_py(gr)+" Pitch "+fl+note))
     if opts: opts[0]["rec"]=True
     return opts
@@ -145,7 +152,8 @@ for g in games:
 u13iss.sort(key=lambda x:(x["date"],x["ground"],x["field"],x["frm"]))
 issues.sort(key=lambda x:(x["date"],x["ground"],x["field"],x["frm"]))
 games.sort(key=lambda g:(g["date"],g["ground"],g["start"]))
-rows=[{k:g[k] for k in ("iso","datedisp","ground","field","time","endt","pitch","catlabel","age","home","away","comp","grade","rnd")} for g in games]
+rows=[dict({k:g[k] for k in ("iso","datedisp","ground","field","time","endt","pitch","catlabel","age","home","away","comp","grade","rnd")},
+           **({"override":True,"moved_from":g["moved_from"]} if g.get("override") else {})) for g in games]
 iss=[{k:(v.isoformat() if k=="date" else v) for k,v in x.items()} for x in issues]
 u13j=[{k:(v.isoformat() if k=="date" else v) for k,v in x.items()} for x in u13iss]
 DATA=json.dumps(rows); ISS=json.dumps(iss); U13J=json.dumps(u13j)
@@ -200,6 +208,12 @@ tr.dhead td{background:#eef2f8;font-weight:700;color:var(--navy);position:sticky
 .g-pettys{color:#1f6feb}.g-powl{color:#8a5cf6}.g-timber{color:#0f9d58}
 .foot{color:var(--mut);font-size:11px;margin-top:22px}
 tr.clashrow td{background:#fdeceb!important}
+tr.moved-old td{text-decoration:line-through;opacity:.5;background:#f7f7f8!important}
+tr.moved-new td{background:#eaf5ea!important;font-weight:600}
+.movedbadge{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.03em;padding:1px 6px;border-radius:5px;background:#1e7d46;color:#fff;margin-left:5px;white-space:nowrap}
+#changes ol.chgblocks li{white-space:pre-line;margin-bottom:10px}
+.copybtn.alt{background:#fff;color:var(--navy);margin-left:8px}
+.copybtn.alt:hover{background:#eef2f8}
 </style></head><body>
 <header><h1>Manningham United Blues &ndash; Schedule &amp; Pitch-Rule Clash Check</h1>
 <p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; 17 Jul &rarr; mid-Sep 2026 &middot; Source: fv.dribl.com</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_setup_packup_plan.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Setup &amp; pack-up</a><a href="Manningham_fixtures.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Fixtures</a></div></header>
@@ -265,20 +279,48 @@ else{u13b.innerHTML=U13.map(i=>'<div class="issue u13">'+
   '<div class="d" style="margin-top:6px">Free full pitches then: '+(i.free.length?'<b style="color:#1e7d46">'+i.free.join(' &middot; ')+'</b>':'<b style="color:#c0392b">none free</b>')+'</div>'+optsHtml(i)+'</div>').join('');}
 document.getElementById('u13head').textContent='U13 not on their own pitch ('+U13.length+')';
 const CHANGES={};
+// gkey must be built exactly as gen_clashes.gkey_of() does (full ground name, raw home team)
+const gkeyOf=g=>[g.iso,(g.moved_from?g.moved_from.ground:g.ground),(g.moved_from?g.moved_from.pitch:g.pitch),g.time,g.home].join('|');
+const MOVED={};
+function syncMoved(){Object.keys(MOVED).forEach(k=>delete MOVED[k]);
+  Object.keys(CHANGES).forEach(k=>{const m=CHANGES[k];if(m.gkey)MOVED[m.gkey]=m;});}
 const INTROS=[
  {l:"Pitch quality / safety risk",t:"Dear Competitions,\n\nWe would like to request that the following fixtures be relocated to an alternative ground, as the current pitch quality is presenting a safety risk to the players. We would be very grateful for your assistance in moving the games listed below:"},
  {l:"Clash of times",t:"Dear Competitions,\n\nWe have identified a scheduling clash affecting the fixtures below, where more than one game is allocated to the same pitch at the same time. We would kindly ask that these games be moved to resolve the overlap:"},
  {l:"Lack of warm-up space & time",t:"Dear Competitions,\n\nDue to insufficient warm-up space and time between fixtures, we would like to request that the following games be moved to an alternative pitch so the teams are able to prepare safely:"},
  {l:"To allow box-to-box (full pitch)",t:"Dear Competitions,\n\nWe are writing to request that the following games be moved to an alternative pitch so that the teams can play box-to-box on a full-size field. We would appreciate your support with the changes set out below:"}
 ];
-function _line(m){return m.date+' — '+m.cat+' '+m.team+' v '+m.opp+' ['+m.comp+']: move from '+m.frm_g+' '+m.frm_p+' ('+m.frm_t+') to '+m.to_g+' '+m.to_p+' — same time.';}
+function _line(m){return [m.date+' '+(m.iso||'').slice(0,4),
+  m.team+' v '+m.opp,
+  'Old: '+m.frm_t+' — '+m.frm_g+' '+m.frm_p,
+  'New: '+m.frm_t+' — '+m.to_g+' '+m.to_p].join('\n');}
 document.getElementById('changes').innerHTML='<div class="intros"><div class="introlbl">Email opening (choose the reason):</div>'+INTROS.map(function(x,i){return '<label><input type="radio" name="intro" value="'+i+'"'+(i===1?' checked':'')+'> '+x.l+'</label>';}).join('')+'</div><div id="chglist"></div>';
 function selIntro(){var r=document.querySelector('input[name=intro]:checked');return INTROS[r?+r.value:1].t;}
 function renderChanges(){
+  syncMoved();
   var keys=Object.keys(CHANGES),el=document.getElementById('chglist');
   document.getElementById('chghead').textContent='Proposed changes – email to FV ('+keys.length+')';
-  if(!keys.length){el.innerHTML='<div class="empty">No changes selected yet — pick a resolution on a clash above and it will be listed here, ready to email FV.</div>';return;}
-  el.innerHTML='<ol><li>'+keys.map(function(k){return _line(CHANGES[k]);}).join('</li><li>')+'</li></ol><button class="copybtn" onclick="copyEmail()">Copy for email</button>';
+  if(!keys.length){el.innerHTML='<div class="empty">No changes selected yet — pick a resolution on a clash above and it will be listed here, ready to email FV.</div>';render();return;}
+  el.innerHTML='<ol class="chgblocks"><li>'+keys.map(function(k){return _line(CHANGES[k]);}).join('</li><li>')+'</li></ol>'+
+    '<button class="copybtn" onclick="copyEmail()">Copy for email</button>'+
+    '<button class="copybtn alt" onclick="copyOverrides()">Copy overrides JSON</button>'+
+    '<button class="copybtn alt" onclick="dlOverrides()">Download overrides.json</button>';
+  render();
+}
+function overrideRecords(){
+  return Object.keys(CHANGES).map(function(k){var m=CHANGES[k];
+    return {gkey:m.gkey,iso:m.iso,home:m.team,away:m.opp,comp:m.comp,time:m.frm_t,
+            from_ground:m.frm_g,from_pitch:m.frm_p,to_ground:m.to_ground,to_field:m.to_field,to_pitch:m.to_p};});
+}
+function _flash(btn,txt){var o=btn.textContent;btn.textContent=txt;setTimeout(function(){btn.textContent=o;},1500);}
+function copyOverrides(){
+  navigator.clipboard.writeText(JSON.stringify(overrideRecords(),null,1)).then(function(){
+    _flash(document.querySelectorAll('.copybtn.alt')[0],'Copied ✓');});
+}
+function dlOverrides(){
+  var b=new Blob([JSON.stringify(overrideRecords(),null,1)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='overrides.json';a.click();
+  URL.revokeObjectURL(a.href);_flash(document.querySelectorAll('.copybtn.alt')[1],'Saved ✓');
 }
 function copyEmail(){
   var keys=Object.keys(CHANGES);
@@ -287,7 +329,6 @@ function copyEmail(){
   navigator.clipboard.writeText(txt).then(function(){var b=document.querySelector('.copybtn');if(b){b.textContent='Copied ✓';setTimeout(function(){b.textContent='Copy for email';},1500);}});
 }
 document.querySelectorAll('.fixsel').forEach(function(s){s.onchange=function(){var sig=s.getAttribute('data-sig'),v=s.value;if(v===''){delete CHANGES[sig];}else{CHANGES[sig]=MOVEMAP[sig][+v];}renderChanges();};});
-renderChanges();
 let ground="All",q="",date="",sortk="time",asc=true;
 const chips=["All","Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve"];
 document.getElementById('chips').innerHTML=chips.map(c=>'<span class="chip'+(c==='All'?' active':'')+'" data-g="'+c+'">'+(c==='All'?'All grounds':gsh(c))+'</span>').join('');
@@ -307,13 +348,27 @@ function render(){
  r.forEach(g=>{
    if(sortk==='time'&&g.datedisp!==lastd){lastd=g.datedisp;out+='<tr class="dhead"><td colspan="8">'+g.datedisp+' '+g.iso.slice(0,4)+'</td></tr>';}
    const cl=clashset.has(g.time+' '+g.catlabel+' '+g.pitch+' ('+g.home.replace('Manningham United Blues FC','MUFC')+' v '+g.away+')');
-   out+='<tr class="'+(cl?'clashrow':'')+'"><td>'+g.time+'–'+g.endt+'</td><td class="'+gcl(g.ground)+'">'+gsh(g.ground)+'</td>'+
-   '<td>'+g.pitch+'</td><td><span class="badge b-'+catCode(g.catlabel)+'">'+g.catlabel+'</span></td>'+
-   '<td>'+g.home+'</td><td>'+g.away+'</td><td>'+g.comp+'</td><td>'+g.rnd+'</td></tr>';
+   const mv=MOVED[gkeyOf(g)];
+   const cells=(gr,pt)=>'<td>'+g.time+'–'+g.endt+'</td><td class="'+gcl(gr)+'">'+gsh(gr)+'</td>'+
+     '<td>'+pt+'</td><td><span class="badge b-'+catCode(g.catlabel)+'">'+g.catlabel+'</span></td>'+
+     '<td>'+g.home+'</td><td>'+g.away+'</td><td>'+g.comp+'</td><td>'+g.rnd+'</td>';
+   if(g.override&&g.moved_from){          // already applied server-side from overrides.json
+     out+='<tr class="moved-old">'+cells(g.moved_from.ground,g.moved_from.pitch)+'</tr>';
+     out+='<tr class="moved-new"><td>'+g.time+'–'+g.endt+'</td><td class="'+gcl(g.ground)+'">'+gsh(g.ground)+'</td>'+
+       '<td>'+g.pitch+' <span class="movedbadge">MOVED</span></td><td><span class="badge b-'+catCode(g.catlabel)+'">'+g.catlabel+'</span></td>'+
+       '<td>'+g.home+'</td><td>'+g.away+'</td><td>'+g.comp+'</td><td>'+g.rnd+'</td></tr>';
+   } else if(mv){                          // chosen in this session
+     out+='<tr class="moved-old">'+cells(g.ground,g.pitch)+'</tr>';
+     out+='<tr class="moved-new"><td>'+g.time+'–'+g.endt+'</td><td class="'+gcl(mv.to_ground)+'">'+gsh(mv.to_ground)+'</td>'+
+       '<td>'+mv.to_p+' <span class="movedbadge">PROPOSED MOVE</span></td><td><span class="badge b-'+catCode(g.catlabel)+'">'+g.catlabel+'</span></td>'+
+       '<td>'+g.home+'</td><td>'+g.away+'</td><td>'+g.comp+'</td><td>'+g.rnd+'</td></tr>';
+   } else {
+     out+='<tr class="'+(cl?'clashrow':'')+'">'+cells(g.ground,g.pitch)+'</tr>';
+   }
  });
  document.getElementById('tb').innerHTML=out;
 }
-render();
+renderChanges();   // also performs the initial render() of the table
 </script></body></html>'''
 open(OUT,"w",encoding="utf-8").write(TEMPLATE.replace("__DATA__",DATA).replace("__ISS__",ISS).replace("__U13__",U13J))
 print("clashes:",len(games),"games,",len(issues),"issues ->",OUT)
