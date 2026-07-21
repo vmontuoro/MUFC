@@ -161,7 +161,7 @@ Allowed combos on one pitch at the same time: 2&times;U10-13 &nbsp;|&nbsp; 1&tim
 <table class="g"><thead><tr><th data-k="time">Time</th><th data-k="ground">Ground</th><th data-k="pitch">Pitch</th>
 <th data-k="catlabel">Group</th><th data-k="home">Home</th><th data-k="away">Away</th><th data-k="comp">Competition</th><th data-k="rnd">Rnd</th></tr></thead>
 <tbody id="tb"></tbody></table>
-<div class="foot">Clashes are suggestions based on the rules above and estimated match lengths &ndash; verify against actual kickoff/finish times before acting.</div>
+<div class="foot">Clashes are suggestions based on the rules above and estimated match lengths &ndash; verify against actual kickoff/finish times before acting. &middot; <a href="Manningham_fixtures.html" style="color:var(--mut)">full fixtures</a></div>
 </div>
 <script>
 const DATA=__DATA__, ISS=__ISS__, U13=__U13__;

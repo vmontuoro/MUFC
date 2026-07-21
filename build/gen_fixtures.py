@@ -114,7 +114,7 @@ table.games tr:nth-child(even) td{background:var(--band)}
 <th data-k="pitch">Pitch</th><th data-k="ftype">Type</th><th data-k="age">Age</th>
 <th data-k="home">Home</th><th data-k="away">Away</th><th data-k="comp">Competition</th><th data-k="grade">Grade</th><th data-k="rnd">Rnd</th>
 </tr></thead><tbody id="tb"></tbody></table>
-<div class="foot">Click a column header to sort. Estimated match durations are used only for the overlap check.</div>
+<div class="foot">Click a column header to sort. Estimated match durations are used only for the overlap check. &middot; <a href="Manningham_schedule_clashes.html" style="color:var(--mut)">clash check</a></div>
 </div>
 <script>
 const DATA=__DATA__, SUM=__SUM__;
