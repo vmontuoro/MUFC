@@ -70,22 +70,37 @@ def keep_priority(g):
         at=1 if n>=12 else 2                                              # community juniors over miniroos
     md=re.search(r'-\s*([ABC])\b',home); div={"A":0,"B":1,"C":2}.get(md.group(1) if md else "",1)  # A over B/C
     return (clinic,at,div)
-def alternatives(g):
+def field_has_room(g,gr,fl):
+    """Can g be ADDED to field (gr,fl) without breaking the capacity rules?
+    A pitch need not be empty — small games may share up to 1.0 (e.g. 0.5 + 0.25 + 0.25)."""
+    over=[o for o in buckets.get((gr,g["iso"],fl),[]) if o["start"]<g["end"] and g["start"]<o["end"]]
+    if not over: return True                                    # empty field
+    if g["cat"]=="BIG" or any(o["cat"]=="BIG" for o in over): return False   # U14+ must be alone
+    for t in sorted({g["start"]}|{o["start"] for o in over if g["start"]<=o["start"]<g["end"]}):
+        if round(sum(o["unit"] for o in over if o["start"]<=t<o["end"])+g["unit"],3)>1.0: return False
+    return True
+def alternatives(g,need_empty=False):
+    """Candidate destinations at the same time. need_empty=True demands a whole free pitch
+    (used for 'U13 on their own pitch'); otherwise a pitch with spare capacity is fine."""
     sat=g["date"].weekday()==5    # Saturday: only Pettys + Timber Ridge available (no Powerful Owl)
     order=sorted(ALLFIELDS,key=lambda gf:0 if gf[0]==g["ground"] else 1)   # same ground first
-    return [(gr,fl) for gr,fl in order
-            if not (gr==g["ground"] and fl==g["field"])
-            and not (sat and gr=="Powerful Owl Park")                      # Saturday: Powerful Owl unavailable
-            and not (g["cat"]=="SMALL" and _bansmall(gr,fl))               # respect U8/9 location ban
-            and field_free(gr,fl,g["iso"],g["start"],g["end"])]
-def opts_for(mv):
+    out=[]
+    for gr,fl in order:
+        if gr==g["ground"] and fl==g["field"]: continue
+        if sat and gr=="Powerful Owl Park": continue                       # Saturday: Powerful Owl unavailable
+        if g["cat"]=="SMALL" and _bansmall(gr,fl): continue                # respect U8/9 location ban
+        empty=field_free(gr,fl,g["iso"],g["start"],g["end"])
+        if empty or (not need_empty and field_has_room(g,gr,fl)): out.append((gr,fl,empty))
+    return out
+def opts_for(mv,need_empty=False):
     opts=[]
     for g in sorted(mv,key=keep_priority,reverse=True):                    # lowest priority first (most movable)
         team=g["home"].replace("Manningham United Blues FC","MUFC")
-        for gr,fl in alternatives(g):
+        for gr,fl,empty in alternatives(g,need_empty):
+            note="" if empty else " (shares pitch, within capacity)"
             opts.append(dict(date=g["datedisp"],team=team,opp=g["away"],cat=g["catlabel"],comp=g["comp"],
                 frm_g=gsh_py(g["ground"]),frm_p=g["pitch"],frm_t=g["time"],to_g=gsh_py(gr),to_p="Pitch "+fl,
-                label="Move "+g["catlabel"]+" "+team+" v "+g["away"]+" → "+gsh_py(gr)+" Pitch "+fl))
+                label="Move "+g["catlabel"]+" "+team+" v "+g["away"]+" → "+gsh_py(gr)+" Pitch "+fl+note))
     if opts: opts[0]["rec"]=True
     return opts
 seen=set()
@@ -126,7 +141,7 @@ for g in games:
     if not others: continue
     free=[gsh_py(gr)+" Pitch "+fl for gr,fl in ALLFIELDS if not (gr==g["ground"] and fl==g["field"]) and field_free(gr,fl,g["iso"],g["start"],g["end"])]
     u13iss.append(dict(date=g["date"],datedisp=g["date"].strftime("%a %d %b"),ground=g["ground"],field=g["field"],frm=g["time"],until=g["endt"],game=desc(g),sharing=[desc(o) for o in others],free=free,
-        moves=opts_for([g]),sig="U|"+g["iso"]+"|"+g["ground"]+"|"+g["field"]+"|"+g["time"]))
+        moves=opts_for([g],need_empty=True),sig="U|"+g["iso"]+"|"+g["ground"]+"|"+g["field"]+"|"+g["time"]))
 u13iss.sort(key=lambda x:(x["date"],x["ground"],x["field"],x["frm"]))
 issues.sort(key=lambda x:(x["date"],x["ground"],x["field"],x["frm"]))
 games.sort(key=lambda g:(g["date"],g["ground"],g["start"]))
