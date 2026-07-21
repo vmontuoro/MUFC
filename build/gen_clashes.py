@@ -139,7 +139,7 @@ tr.dhead td{background:#eef2f8;font-weight:700;color:var(--navy);position:sticky
 tr.clashrow td{background:#fdeceb!important}
 </style></head><body>
 <header><h1>Manningham United Blues &ndash; Schedule &amp; Pitch-Rule Clash Check</h1>
-<p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; 17 Jul &rarr; mid-Sep 2026 &middot; Source: fv.dribl.com</p></header>
+<p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; 17 Jul &rarr; mid-Sep 2026 &middot; Source: fv.dribl.com</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_setup_packup_plan.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Setup &amp; pack-up</a><a href="Manningham_fixtures.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Fixtures</a></div></header>
 <div class="wrap">
 <div class="cards" id="cards"></div>
 <h2>Pitch capacity rules applied</h2>

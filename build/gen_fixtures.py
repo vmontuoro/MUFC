@@ -99,7 +99,7 @@ table.games tr:nth-child(even) td{background:var(--band)}
 .foot{color:var(--mut);font-size:11px;margin-top:22px}
 </style></head><body>
 <header><h1>Manningham United Blues &ndash; Fixtures &amp; Overlap Check</h1>
-<p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; Source: fv.dribl.com (2026 season)</p></header>
+<p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; Source: fv.dribl.com (2026 season)</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_setup_packup_plan.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Setup &amp; pack-up</a><a href="Manningham_schedule_clashes.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Clash check</a></div></header>
 <div class="wrap">
 <div class="cards" id="cards"></div>
 <h2>Overlap &amp; clash check</h2>
