@@ -42,6 +42,15 @@ for ground,path in files.items():
             team=team,mufc=mufc,home_mufc=home_mufc,
             elig=(not (mufc and not home_mufc)) and not man,manual=man,rnd=rnd.replace("Round ","R"),comp=comp.split("|")[0].strip(),
             setup=False,packup=False,stasks=[],ptasks=[],poles_out=False,poles_away=False,stretch_out=False,stretch_away=False))
+import overrides as _ovr
+def gkey_of(g):
+    """Must match gen_clashes.gkey_of exactly: iso|ground|pitch|time|home"""
+    return "|".join([g["iso"],g["ground"],g["pitch"],g["time"],g["home"]])
+# Apply saved manual moves BEFORE duty logic, so set-up/pack-up is worked out for the pitch
+# the game will actually be played on.
+if _ovr.apply(games,gkey_of):
+    for g in games:
+        if g.get("override"): g["gord"]=GORD.get(g["ground"],g["gord"])
 groups={}
 for g in games: groups.setdefault((g["ground"],g["iso"],g["pitch"]),[]).append(g)
 for grp in groups.values():
@@ -124,7 +133,8 @@ for grp in _pw.values():
     for i,g in enumerate(grp):
         if any(_ov(g["start"],g["_cre"],h["start"],h["_cre"]) for h in grp[:i]): g["cr_clash"]=True
 games.sort(key=lambda g:(g["date"],g["gord"],g["pitch"],g["start"]))
-rows=[{k:g[k] for k in ("iso","datedisp","ground","pitch","time","age","band","team","home","away","mufc","home_mufc","setup","packup","stasks","ptasks","rnd","comp","home_cr","away_cr","cr_clash","manual")} for g in games]
+rows=[dict({k:g[k] for k in ("iso","datedisp","ground","pitch","time","age","band","team","home","away","mufc","home_mufc","setup","packup","stasks","ptasks","rnd","comp","home_cr","away_cr","cr_clash","manual")},
+           **({"override":True,"moved_from":g["moved_from"]} if g.get("override") else {})) for g in games]
 DATA=json.dumps(rows)
 _mt=max(os.path.getmtime(p) for p in files.values() if os.path.exists(p))
 UPD=dt.date.fromtimestamp(_mt).strftime("%d %b %Y").lstrip("0")
