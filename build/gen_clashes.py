@@ -27,6 +27,7 @@ def field_info(pitch,ground):
     m=re.search(r'Pitch\s+(\d+)',p); return (m.group(1) if m else "?"),p
 def fmt(m): return f"{m//60:02d}:{m%60:02d}"
 def category(age,comp):
+    if comp=="Girls Clinic": return "MID"
     if "All Abilities" in comp: return "AAL"
     if age in ("U06","U07"): return "TINY"
     if age in ("U08","U09"): return "SMALL"
@@ -34,13 +35,16 @@ def category(age,comp):
     return "BIG"
 UNIT={"TINY":.25,"SMALL":.25,"AAL":.25,"MID":.5,"BIG":1.0}
 CATLABEL={"TINY":"U6/7","SMALL":"U8/9","MID":"U10-13","BIG":"U14+","AAL":"All-Abilities"}
+import manual_games
 games=[]
 for ground,path in files.items():
-    for date_s,time_s,home,away,comp,pitch,rnd in read(path):
+    _tuples=read(path)
+    if ground=="Pettys Reserve": _tuples=list(_tuples)+manual_games.build(_tuples,parse_date)
+    for date_s,time_s,home,away,comp,pitch,rnd in _tuples:
         d=parse_date(date_s)
         if d<CUTOFF: continue
         hh,mm=map(int,time_s.split(":")); start=hh*60+mm
-        dur=duration(home+" "+away,comp); num,plabel=field_info(pitch,ground)
+        dur=(90 if "All Abilities" in comp else 60) if away==manual_games.MARK else duration(home+" "+away,comp); num,plabel=field_info(pitch,ground)
         age=age_token(home if "Manningham" in home else away+" "+home); cat=category(age,comp)
         cp=[x.strip() for x in comp.split("|")]
         games.append(dict(date=d,iso=d.isoformat(),datedisp=d.strftime("%a %d %b"),time=time_s,start=start,

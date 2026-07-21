@@ -18,16 +18,21 @@ def band(age,comp):
     if age in ("U10","U11","U12","U13"): return "U10-13"
     return "SNR"
 MINI={"U7","U8/9","U10-13","AAL"}
+import manual_games
 games=[]
 for ground,path in files.items():
-    for date_s,time_s,home,away,comp,pitch,rnd in read(path):
+    _tuples=read(path)
+    if ground=="Pettys Reserve": _tuples=list(_tuples)+manual_games.build(_tuples,parse_date)
+    for date_s,time_s,home,away,comp,pitch,rnd in _tuples:
         d=parse_date(date_s)
         if d<CUTOFF: continue
+        man=(away==manual_games.MARK)
         hh,mm=map(int,time_s.split(":")); start=hh*60+mm
         plabel=pitch.replace(ground,"").strip()
         home_mufc="Manningham United Blues" in home; away_mufc="Manningham United Blues" in away
         mufc=home_mufc or away_mufc
         age=age_token(home if home_mufc else (away if away_mufc else home)); bd=band(age,comp)
+        if comp=="Girls Clinic": bd="U10-13"
         team=((home if home_mufc else away) if mufc else home).replace("Manningham United Blues FC","MUFC")
         if re.match(r'MUFC U\d+$',team):  # Dribl reuses plain "MUFC U15" for both boys VYPL and girls CPL
             if "Community Premier League Girls" in comp: team+=" Girls (CPL)"
@@ -35,7 +40,7 @@ for ground,path in files.items():
         games.append(dict(date=d,iso=d.isoformat(),datedisp=d.strftime("%a %d %b %Y"),time=time_s,start=start,
             ground=ground,gord=GORD[ground],pitch=plabel,age=age,band=bd,home=home,away=away,
             team=team,mufc=mufc,home_mufc=home_mufc,
-            elig=not (mufc and not home_mufc),rnd=rnd.replace("Round ","R"),comp=comp.split("|")[0].strip(),
+            elig=(not (mufc and not home_mufc)) and not man,manual=man,rnd=rnd.replace("Round ","R"),comp=comp.split("|")[0].strip(),
             setup=False,packup=False,stasks=[],ptasks=[],poles_out=False,poles_away=False,stretch_out=False,stretch_away=False))
 groups={}
 for g in games: groups.setdefault((g["ground"],g["iso"],g["pitch"]),[]).append(g)
@@ -119,7 +124,7 @@ for grp in _pw.values():
     for i,g in enumerate(grp):
         if any(_ov(g["start"],g["_cre"],h["start"],h["_cre"]) for h in grp[:i]): g["cr_clash"]=True
 games.sort(key=lambda g:(g["date"],g["gord"],g["pitch"],g["start"]))
-rows=[{k:g[k] for k in ("iso","datedisp","ground","pitch","time","age","band","team","home","away","mufc","home_mufc","setup","packup","stasks","ptasks","rnd","comp","home_cr","away_cr","cr_clash")} for g in games]
+rows=[{k:g[k] for k in ("iso","datedisp","ground","pitch","time","age","band","team","home","away","mufc","home_mufc","setup","packup","stasks","ptasks","rnd","comp","home_cr","away_cr","cr_clash","manual")} for g in games]
 DATA=json.dumps(rows)
 _mt=max(os.path.getmtime(p) for p in files.values() if os.path.exists(p))
 UPD=dt.date.fromtimestamp(_mt).strftime("%d %b %Y").lstrip("0")

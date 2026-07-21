@@ -35,9 +35,12 @@ def field_info(pitch,ground):
     letter=after[0] if after and after[0].isalpha() and not after.startswith("(") else ""
     return num,("Sub" if (letter or "Midi" in p) else "Full"),p
 def fmt(m): return f"{m//60:02d}:{m%60:02d}"
+import manual_games
 games=[]
 for ground,path in files.items():
-    for date_s,time_s,home,away,comp,pitch,rnd in read(path):
+    _tuples=read(path)
+    if ground=="Pettys Reserve": _tuples=list(_tuples)+manual_games.build(_tuples,parse_date)
+    for date_s,time_s,home,away,comp,pitch,rnd in _tuples:
         d=parse_date(date_s); hh,mm=map(int,time_s.split(":")); start=hh*60+mm
         dur=duration(home+" "+away,comp); num,ftype,plabel=field_info(pitch,ground)
         cp=[x.strip() for x in comp.split("|")]
