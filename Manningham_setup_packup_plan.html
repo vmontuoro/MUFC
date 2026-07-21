@@ -29,6 +29,10 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 .dhead{font-size:16px;font-weight:700;color:var(--navy);margin:22px 0 8px;border-bottom:2px solid var(--navy);padding-bottom:4px}
 .pitchblk{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden}
 .pitchhd{background:#eef2f8;padding:8px 12px;font-weight:700;font-size:13px;color:var(--navy)}
+.fieldgrp{border-left:5px solid var(--navy);border-radius:3px;padding:2px 0 2px 13px;margin:14px 0}
+.fieldlbl{font-size:11.5px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em;margin:4px 0 2px}
+.fieldgrp .pitchblk{margin:7px 0}
+@media print{.fieldgrp{border-left-color:#888}}
 .gr{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;padding:9px 12px;border-top:1px solid var(--line);font-size:12.5px}
 .gr .tm{width:62px;font-weight:700;white-space:nowrap}
 .gr .mid{flex:1;min-width:220px}
@@ -251,11 +255,22 @@ function render(){
  let r=DATA.filter(g=>(ground==="All"||g.ground===ground)&&(!date||g.iso===date)&&(!team||g.team===team));
  if(q)r=r.filter(g=>(g.home+' '+g.away+' '+g.comp+' '+g.pitch+' '+g.age+' '+g.band+' '+g.team+' '+g.datedisp).toLowerCase().includes(q));
  document.getElementById('count').textContent=r.length+' games';
- let out='',lastd='',lastp='';
+ // group sub-pitches (1A/1B/Midi…) under the physical field they belong to
+ const fieldOf=p=>{const m=p.match(/Pitch\s*(\d+)/);return m?m[1]:'?';};
+ const subs={};
+ r.forEach(g=>{const k=g.iso+'|'+g.ground+'|'+fieldOf(g.pitch);(subs[k]=subs[k]||[]).indexOf(g.pitch)<0&&subs[k].push(g.pitch);});
+ let out='',lastd='',lastp='',lastf='',openF=false;
+ const closeP=()=>{if(lastp){out+='</div>';lastp='';}};
+ const closeF=()=>{closeP();if(openF){out+='</div>';openF=false;}lastf='';};
  r.forEach(g=>{
-   if(g.datedisp!==lastd){lastd=g.datedisp;lastp='';out+='<div class="dhead">'+g.datedisp+'</div>';}
+   if(g.datedisp!==lastd){closeF();lastd=g.datedisp;out+='<div class="dhead">'+g.datedisp+'</div>';}
+   const fnum=fieldOf(g.pitch), fk=g.iso+'|'+g.ground+'|'+fnum, multi=(subs[fk]||[]).length>1;
+   if(fk!==lastf){
+     closeF();lastf=fk;
+     if(multi){openF=true;out+='<div class="fieldgrp"><div class="fieldlbl">'+gsh(g.ground)+' &middot; Pitch '+fnum+' &mdash; '+(subs[fk].length)+' sub-pitches share this field</div>';}
+   }
    const pk=g.ground+'|'+g.pitch;
-   if(pk!==lastp){lastp=pk;out+='<div class="pitchblk"><div class="pitchhd">'+gsh(g.ground)+' &middot; '+esc(g.pitch)+'</div>';}
+   if(pk!==lastp){closeP();lastp=pk;out+='<div class="pitchblk"><div class="pitchhd">'+(multi?'':gsh(g.ground)+' &middot; ')+esc(g.pitch)+'</div>';}
    let duty='';
    if(g.setup)duty+='<details class="dt"><summary><span class="tag s">SET UP</span></summary>'+(g.stasks.length?'<ul class="tasks">'+g.stasks.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'')+'</details>';
    if(g.packup)duty+='<details class="dt"><summary><span class="tag p">PACK UP</span></summary>'+(g.ptasks.length?'<ul class="tasks p">'+g.ptasks.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'')+'</details>';
@@ -267,6 +282,7 @@ function render(){
      '<div class="sub">'+esc(g.comp)+'</div>'+(g.home_cr?'<div class="cr'+(g.cr_clash?' clash':'')+'">Change rooms &mdash; Home <b>CR'+g.home_cr+'</b> &middot; Away <b>CR'+g.away_cr+'</b>'+(g.cr_clash?' &nbsp;&#9888; overlap':'')+'</div>':(g.cr_clash?'<div class="cr clash">&#9888; Change-room clash &mdash; no free room</div>':''))+(g.manual?'':'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div>')+'</div>'+
      '<div class="duty">'+duty+'</div></div>';
  });
+ closeF();
  document.getElementById('body').innerHTML=out;
 }
 DATA.forEach(function(g){
