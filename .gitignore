@@ -25,6 +25,7 @@ TeamOfficials_*.csv
 build/*
 !build/*.py
 !build/raw_*.txt
+!build/overrides.json
 !.claude/
 .claude/*
 !.claude/skills/

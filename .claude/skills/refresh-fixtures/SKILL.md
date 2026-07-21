@@ -20,6 +20,15 @@ Which generator produces which page:
   `build/raw_powl.txt`, `build/raw_timber.txt`. If stale/missing, give the user the
   **cowork capture prompt** (below) and wait for the files.
 
+## 0b. Manual overrides — ASK THE USER PER DATE
+If `build/overrides.json` exists and is non-empty it holds fixture moves the club requested but
+Dribl had not yet actioned. `python build/refresh.py` prints them grouped by date. **Before
+publishing, ask the user for each of those dates** (AskUserQuestion) whether to:
+- **keep** the override (FV still hasn't actioned it), or
+- **drop** it (the fresh Dribl capture now contains FV's actioned fixture — the override is stale
+  and would double-apply).
+Then prune `build/overrides.json` accordingly and regenerate. Never decide this silently.
+
 ## 1. Regenerate everything
 ```
 python build/refresh.py
