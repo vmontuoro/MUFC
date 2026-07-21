@@ -71,9 +71,11 @@ def keep_priority(g):
     md=re.search(r'-\s*([ABC])\b',home); div={"A":0,"B":1,"C":2}.get(md.group(1) if md else "",1)  # A over B/C
     return (clinic,at,div)
 def alternatives(g):
+    sat=g["date"].weekday()==5    # Saturday: only Pettys + Timber Ridge available (no Powerful Owl)
     order=sorted(ALLFIELDS,key=lambda gf:0 if gf[0]==g["ground"] else 1)   # same ground first
     return [(gr,fl) for gr,fl in order
             if not (gr==g["ground"] and fl==g["field"])
+            and not (sat and gr=="Powerful Owl Park")                      # Saturday: Powerful Owl unavailable
             and not (g["cat"]=="SMALL" and _bansmall(gr,fl))               # respect U8/9 location ban
             and field_free(gr,fl,g["iso"],g["start"],g["end"])]
 def opts_for(mv):
@@ -81,9 +83,9 @@ def opts_for(mv):
     for g in sorted(mv,key=keep_priority,reverse=True):                    # lowest priority first (most movable)
         team=g["home"].replace("Manningham United Blues FC","MUFC")
         for gr,fl in alternatives(g):
-            opts.append(dict(date=g["datedisp"],team=team,cat=g["catlabel"],comp=g["comp"],
+            opts.append(dict(date=g["datedisp"],team=team,opp=g["away"],cat=g["catlabel"],comp=g["comp"],
                 frm_g=gsh_py(g["ground"]),frm_p=g["pitch"],frm_t=g["time"],to_g=gsh_py(gr),to_p="Pitch "+fl,
-                label="Move "+g["catlabel"]+" "+team+" → "+gsh_py(gr)+" Pitch "+fl))
+                label="Move "+g["catlabel"]+" "+team+" v "+g["away"]+" → "+gsh_py(gr)+" Pitch "+fl))
     if opts: opts[0]["rec"]=True
     return opts
 seen=set()
@@ -161,6 +163,10 @@ h2{font-size:15px;color:var(--navy);margin:26px 0 10px;border-bottom:2px solid v
 select.fixsel{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:#fff;max-width:100%;cursor:pointer}
 #changes{background:var(--band);border:1px solid var(--line);border-radius:10px;padding:12px 15px}
 #changes ol{margin:4px 0 0;padding-left:20px;font-size:12.5px;line-height:1.55}
+.intros{margin:0 0 11px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.introlbl{font-size:11.5px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.intros label{display:block;font-size:12.5px;color:#334;margin:3px 0;cursor:pointer}
+.intros input{margin-right:7px;vertical-align:middle}
 #changes .empty{font-size:12.5px;color:var(--mut)}
 .copybtn{margin-top:11px;border:1px solid var(--navy);background:var(--navy);color:#fff;border-radius:8px;padding:7px 15px;font-size:12.5px;font-weight:600;cursor:pointer}
 .copybtn:hover{background:#16294a}
@@ -216,7 +222,7 @@ function optsHtml(i){
   MOVEMAP[i.sig]=i.moves||[];
   if(!i.moves||!i.moves.length) return '<div class="rec norec">No free pitch at this time &mdash; leave as-is.</div>';
   var m=i.moves[0];
-  var rec='<div class="rec">&#9654; Recommended: move <b>'+m.cat+' '+m.team+'</b> to <b>'+m.to_g+' '+m.to_p+'</b> (same time)</div>';
+  var rec='<div class="rec">&#9654; Recommended: move <b>'+m.cat+' '+m.team+' v '+m.opp+'</b> to <b>'+m.to_g+' '+m.to_p+'</b> (same time)</div>';
   var sel='<div class="fixrow"><label>Resolution:</label><select class="fixsel" data-sig="'+i.sig+'"><option value="">Leave as-is</option>'+
     i.moves.map(function(m,mi){return '<option value="'+mi+'">'+m.label+(m.rec?' ★':'')+'</option>';}).join('')+'</select></div>';
   return rec+sel;
@@ -244,9 +250,17 @@ else{u13b.innerHTML=U13.map(i=>'<div class="issue u13">'+
   '<div class="d" style="margin-top:6px">Free full pitches then: '+(i.free.length?'<b style="color:#1e7d46">'+i.free.join(' &middot; ')+'</b>':'<b style="color:#c0392b">none free</b>')+'</div>'+optsHtml(i)+'</div>').join('');}
 document.getElementById('u13head').textContent='U13 not on their own pitch ('+U13.length+')';
 const CHANGES={};
-function _line(m){return m.date+' — '+m.cat+' '+m.team+' ['+m.comp+']: move from '+m.frm_g+' '+m.frm_p+' ('+m.frm_t+') to '+m.to_g+' '+m.to_p+' — same time.';}
+const INTROS=[
+ {l:"Pitch quality / safety risk",t:"Dear Competitions,\n\nWe would like to request that the following fixtures be relocated to an alternative ground, as the current pitch quality is presenting a safety risk to the players. We would be very grateful for your assistance in moving the games listed below:"},
+ {l:"Clash of times",t:"Dear Competitions,\n\nWe have identified a scheduling clash affecting the fixtures below, where more than one game is allocated to the same pitch at the same time. We would kindly ask that these games be moved to resolve the overlap:"},
+ {l:"Lack of warm-up space & time",t:"Dear Competitions,\n\nDue to insufficient warm-up space and time between fixtures, we would like to request that the following games be moved to an alternative pitch so the teams are able to prepare safely:"},
+ {l:"To allow box-to-box (full pitch)",t:"Dear Competitions,\n\nWe are writing to request that the following games be moved to an alternative pitch so that the teams can play box-to-box on a full-size field. We would appreciate your support with the changes set out below:"}
+];
+function _line(m){return m.date+' — '+m.cat+' '+m.team+' v '+m.opp+' ['+m.comp+']: move from '+m.frm_g+' '+m.frm_p+' ('+m.frm_t+') to '+m.to_g+' '+m.to_p+' — same time.';}
+document.getElementById('changes').innerHTML='<div class="intros"><div class="introlbl">Email opening (choose the reason):</div>'+INTROS.map(function(x,i){return '<label><input type="radio" name="intro" value="'+i+'"'+(i===1?' checked':'')+'> '+x.l+'</label>';}).join('')+'</div><div id="chglist"></div>';
+function selIntro(){var r=document.querySelector('input[name=intro]:checked');return INTROS[r?+r.value:1].t;}
 function renderChanges(){
-  var keys=Object.keys(CHANGES),el=document.getElementById('changes');
+  var keys=Object.keys(CHANGES),el=document.getElementById('chglist');
   document.getElementById('chghead').textContent='Proposed changes – email to FV ('+keys.length+')';
   if(!keys.length){el.innerHTML='<div class="empty">No changes selected yet — pick a resolution on a clash above and it will be listed here, ready to email FV.</div>';return;}
   el.innerHTML='<ol><li>'+keys.map(function(k){return _line(CHANGES[k]);}).join('</li><li>')+'</li></ol><button class="copybtn" onclick="copyEmail()">Copy for email</button>';
@@ -254,7 +268,7 @@ function renderChanges(){
 function copyEmail(){
   var keys=Object.keys(CHANGES);
   var body=keys.map(function(k,i){return (i+1)+'. '+_line(CHANGES[k]);}).join('\n');
-  var txt='Manningham United Blues — requested fixture changes (please action on Dribl):\n\n'+body+'\n';
+  var txt=selIntro()+'\n\n'+body+'\n\nKind regards,\nManningham United Blues FC';
   navigator.clipboard.writeText(txt).then(function(){var b=document.querySelector('.copybtn');if(b){b.textContent='Copied ✓';setTimeout(function(){b.textContent='Copy for email';},1500);}});
 }
 document.querySelectorAll('.fixsel').forEach(function(s){s.onchange=function(){var sig=s.getAttribute('data-sig'),v=s.value;if(v===''){delete CHANGES[sig];}else{CHANGES[sig]=MOVEMAP[sig][+v];}renderChanges();};});
