@@ -40,6 +40,8 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 .bd{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;margin-left:6px}
 .bd-U7{background:#fceaf3;color:#a3316f}.bd-U89{background:#fdf0e6;color:#a85b13}.bd-MOD{background:#e9f7ef;color:#1e7d46}.bd-AAL{background:#eee9fb;color:#5b3ea6}.bd-SNR{background:#e6eefc;color:#1f3864}
 .bd.manual{background:#fde68a;color:#92400e;font-weight:700}
+.bd.moved{background:#1e7d46;color:#fff;font-weight:700}
+.movednote{font-size:11.5px;color:#1e5220;margin-top:5px;font-weight:600}
 .duty{min-width:250px}
 .tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;margin-right:6px}
 .tag.s{background:var(--greenbg);color:var(--green)}.tag.p{background:var(--orangebg);color:var(--orange)}
@@ -279,7 +281,7 @@ function render(){
    out+='<div class="gr"><div class="tm">'+g.time+'</div>'+
      (g.manual?'<div class="mid"><div class="fix">'+esc(g.home.replace("Manningham United Blues FC","MUFC"))+' <span class="bd manual">MANUAL ADD</span><span class="bd bd-'+bcode(g.band)+'">'+g.band+'</span></div>':'<div class="mid"><div class="fix'+(away?' away':'')+'">'+esc(g.home.replace("Manningham United Blues FC","MUFC"))+' v<span class="bd bd-'+bcode(g.band)+'">'+g.band+'</span></div>'+
      '<div class="fix'+(away?' away':'')+'">'+esc(g.away.replace("Manningham United Blues FC","MUFC"))+(away?' (AWAY)':'')+'</div>')+
-     '<div class="sub">'+esc(g.comp)+'</div>'+(g.home_cr?'<div class="cr'+(g.cr_clash?' clash':'')+'">Change rooms &mdash; Home <b>CR'+g.home_cr+'</b> &middot; Away <b>CR'+g.away_cr+'</b>'+(g.cr_clash?' &nbsp;&#9888; overlap':'')+'</div>':(g.cr_clash?'<div class="cr clash">&#9888; Change-room clash &mdash; no free room</div>':''))+(g.manual?'':'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div>')+'</div>'+
+     '<div class="sub">'+esc(g.comp)+'</div>'+(g.override&&g.moved_from?'<div class="movednote"><span class="bd moved">MOVED</span> was '+gsh(g.moved_from.ground)+' &middot; '+esc(g.moved_from.pitch)+' &mdash; pending FV</div>':'')+(g.home_cr?'<div class="cr'+(g.cr_clash?' clash':'')+'">Change rooms &mdash; Home <b>CR'+g.home_cr+'</b> &middot; Away <b>CR'+g.away_cr+'</b>'+(g.cr_clash?' &nbsp;&#9888; overlap':'')+'</div>':(g.cr_clash?'<div class="cr clash">&#9888; Change-room clash &mdash; no free room</div>':''))+(g.manual?'':'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div>')+'</div>'+
      '<div class="duty">'+duty+'</div></div>';
  });
  closeF();

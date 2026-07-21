@@ -51,10 +51,11 @@ def apply(games, gkey_of):
         o = by_key.get(gkey_of(g))
         if not o:
             continue
-        g["moved_from"] = {"ground": g["ground"], "pitch": g["pitch"], "field": g["field"]}
+        # gen_duties games have no "field" key — keep this tolerant of both game shapes
+        g["moved_from"] = {"ground": g["ground"], "pitch": g["pitch"], "field": g.get("field", "")}
         g["override"] = True
         g["ground"] = o.get("to_ground", g["ground"])
-        g["field"] = str(o.get("to_field", g["field"]))
+        g["field"] = str(o.get("to_field", g.get("field", "")))
         g["pitch"] = o.get("to_pitch") or ("Pitch " + g["field"])
         n += 1
     return n
