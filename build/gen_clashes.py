@@ -53,6 +53,39 @@ for ground,path in files.items():
 issues=[]; buckets={}
 for g in games: buckets.setdefault((g["ground"],g["iso"],g["field"]),[]).append(g)
 def desc(g): return f'{g["time"]} {g["catlabel"]} {g["pitch"]} ({g["home"].replace("Manningham United Blues FC","MUFC")} v {g["away"]})'
+# ---- clash-resolution: free-pitch alternatives + which game to move (priority) ----
+def gsh_py(g): return "Pettys" if g=="Pettys Reserve" else ("Powerful Owl" if g=="Powerful Owl Park" else "Timber Ridge")
+ALLFIELDS=[("Pettys Reserve","1"),("Pettys Reserve","2"),("Powerful Owl Park","1"),("Powerful Owl Park","2"),("Powerful Owl Park","3"),("Timber Ridge Reserve","1"),("Timber Ridge Reserve","2")]
+def field_free(gr,fl,iso,s,e):
+    return all(not (o["start"]<e and s<o["end"]) for o in buckets.get((gr,iso,fl),[]))
+_SENIOR={"Seniors","Reserves","U20","U21","U23"}
+def _bansmall(gr,fl): return gr=="Timber Ridge Reserve" or (gr=="Powerful Owl Park" and fl in ("2","3"))
+def keep_priority(g):
+    # lower tuple = higher priority = KEEP in place (the higher-priority game stays; the lower one moves)
+    comp,age,home=g["comp"],g["age"],g["home"]
+    clinic=0 if ("All Abilities" in comp or comp=="Girls Clinic") else 1   # clinics kept above all
+    if age in _SENIOR: at=0                                                # seniors over juniors
+    else:
+        m=re.match(r'U0?(\d+)',age); n=int(m.group(1)) if m else 12
+        at=1 if n>=12 else 2                                              # community juniors over miniroos
+    md=re.search(r'-\s*([ABC])\b',home); div={"A":0,"B":1,"C":2}.get(md.group(1) if md else "",1)  # A over B/C
+    return (clinic,at,div)
+def alternatives(g):
+    order=sorted(ALLFIELDS,key=lambda gf:0 if gf[0]==g["ground"] else 1)   # same ground first
+    return [(gr,fl) for gr,fl in order
+            if not (gr==g["ground"] and fl==g["field"])
+            and not (g["cat"]=="SMALL" and _bansmall(gr,fl))               # respect U8/9 location ban
+            and field_free(gr,fl,g["iso"],g["start"],g["end"])]
+def opts_for(mv):
+    opts=[]
+    for g in sorted(mv,key=keep_priority,reverse=True):                    # lowest priority first (most movable)
+        team=g["home"].replace("Manningham United Blues FC","MUFC")
+        for gr,fl in alternatives(g):
+            opts.append(dict(date=g["datedisp"],team=team,cat=g["catlabel"],comp=g["comp"],
+                frm_g=gsh_py(g["ground"]),frm_p=g["pitch"],frm_t=g["time"],to_g=gsh_py(gr),to_p="Pitch "+fl,
+                label="Move "+g["catlabel"]+" "+team+" → "+gsh_py(gr)+" Pitch "+fl))
+    if opts: opts[0]["rec"]=True
+    return opts
 seen=set()
 for (ground,iso,field),gs in buckets.items():
     for t in sorted({g["start"] for g in gs}):
@@ -72,7 +105,8 @@ for (ground,iso,field),gs in buckets.items():
         if rule:
             seen.add(key)
             issues.append(dict(date=gs[0]["date"],datedisp=gs[0]["date"].strftime("%a %d %b"),ground=ground,field=field,
-                frm=fmt(t),until=fmt(win_e),rule=rule,detail=detail,games=[desc(g) for g in sorted(active,key=lambda x:x["start"])]))
+                frm=fmt(t),until=fmt(win_e),rule=rule,detail=detail,games=[desc(g) for g in sorted(active,key=lambda x:x["start"])],
+                moves=opts_for(active),sig="C|"+iso+"|"+ground+"|"+field+"|"+fmt(t)))
 for g in games:
     if g["cat"]=="SMALL":
         bad=None
@@ -80,19 +114,17 @@ for g in games:
         elif g["ground"]=="Powerful Owl Park" and g["field"] in ("2","3"): bad=f"Powerful Owl Park pitch {g['field']}"
         if bad:
             issues.append(dict(date=g["date"],datedisp=g["date"].strftime("%a %d %b"),ground=g["ground"],field=g["field"],
-                frm=g["time"],until=g["endt"],rule="U8/9 in a banned location",detail=f'U8/9 game scheduled at {bad} – U8/9 not permitted here.',games=[desc(g)]))
+                frm=g["time"],until=g["endt"],rule="U8/9 in a banned location",detail=f'U8/9 game scheduled at {bad} – U8/9 not permitted here.',games=[desc(g)],
+                moves=opts_for([g]),sig="B|"+g["iso"]+"|"+g["ground"]+"|"+g["field"]+"|"+g["time"]))
 # ---- U13 not on their own pitch (sharing a physical field) + free-pitch suggestions ----
-def gsh_py(g): return "Pettys" if g=="Pettys Reserve" else ("Powerful Owl" if g=="Powerful Owl Park" else "Timber Ridge")
-ALLFIELDS=[("Pettys Reserve","1"),("Pettys Reserve","2"),("Powerful Owl Park","1"),("Powerful Owl Park","2"),("Powerful Owl Park","3"),("Timber Ridge Reserve","1"),("Timber Ridge Reserve","2")]
-def field_free(gr,fl,iso,s,e):
-    return all(not (o["start"]<e and s<o["end"]) for o in buckets.get((gr,iso,fl),[]))
 u13iss=[]
 for g in games:
     if g["age"]!="U13": continue
     others=[o for o in buckets.get((g["ground"],g["iso"],g["field"]),[]) if o is not g and o["start"]<g["end"] and g["start"]<o["end"]]
     if not others: continue
     free=[gsh_py(gr)+" Pitch "+fl for gr,fl in ALLFIELDS if not (gr==g["ground"] and fl==g["field"]) and field_free(gr,fl,g["iso"],g["start"],g["end"])]
-    u13iss.append(dict(date=g["date"],datedisp=g["date"].strftime("%a %d %b"),ground=g["ground"],field=g["field"],frm=g["time"],until=g["endt"],game=desc(g),sharing=[desc(o) for o in others],free=free))
+    u13iss.append(dict(date=g["date"],datedisp=g["date"].strftime("%a %d %b"),ground=g["ground"],field=g["field"],frm=g["time"],until=g["endt"],game=desc(g),sharing=[desc(o) for o in others],free=free,
+        moves=opts_for([g]),sig="U|"+g["iso"]+"|"+g["ground"]+"|"+g["field"]+"|"+g["time"]))
 u13iss.sort(key=lambda x:(x["date"],x["ground"],x["field"],x["frm"]))
 issues.sort(key=lambda x:(x["date"],x["ground"],x["field"],x["frm"]))
 games.sort(key=lambda g:(g["date"],g["ground"],g["start"]))
@@ -122,6 +154,16 @@ h2{font-size:15px;color:var(--navy);margin:26px 0 10px;border-bottom:2px solid v
 .issue .d{font-size:12.5px;color:#333;margin:3px 0 5px}
 .issue ul{margin:4px 0 0 18px;padding:0;font-size:12px;color:#444}
 .none{background:#eaf5ea;border:1px solid #cfe7cf;color:#1e5220;border-radius:10px;padding:12px 14px;font-size:13px}
+.rec{font-size:12px;color:#1e5220;margin:7px 0 3px;font-weight:600}
+.rec.norec{color:#8a6d3b}
+.fixrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px}
+.fixrow label{font-size:11.5px;color:var(--mut);font-weight:600}
+select.fixsel{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:#fff;max-width:100%;cursor:pointer}
+#changes{background:var(--band);border:1px solid var(--line);border-radius:10px;padding:12px 15px}
+#changes ol{margin:4px 0 0;padding-left:20px;font-size:12.5px;line-height:1.55}
+#changes .empty{font-size:12.5px;color:var(--mut)}
+.copybtn{margin-top:11px;border:1px solid var(--navy);background:var(--navy);color:#fff;border-radius:8px;padding:7px 15px;font-size:12.5px;font-weight:600;cursor:pointer}
+.copybtn:hover{background:#16294a}
 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0 12px;position:sticky;top:0;background:#fff;padding:10px 0;z-index:5}
 .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--mut)}
 .chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -154,6 +196,8 @@ Allowed combos on one pitch at the same time: 2&times;U10-13 &nbsp;|&nbsp; 1&tim
 <div id="issues"></div>
 <h2 id="u13head">U13 not on their own pitch</h2>
 <div id="u13"></div>
+<h2 id="chghead">Proposed changes &ndash; email to FV</h2>
+<div id="changes"></div>
 <h2>Full schedule &ndash; by date, ground &amp; time</h2>
 <div class="controls"><span id="chips"></span>
 <select id="dsel"><option value="">All dates</option></select>
@@ -167,6 +211,16 @@ Allowed combos on one pitch at the same time: 2&times;U10-13 &nbsp;|&nbsp; 1&tim
 const DATA=__DATA__, ISS=__ISS__, U13=__U13__;
 const gsh=g=>g==="Pettys Reserve"?"Pettys":g==="Powerful Owl Park"?"Powerful Owl":"Timber Ridge";
 const gcl=g=>g==="Pettys Reserve"?"g-pettys":g==="Powerful Owl Park"?"g-powl":"g-timber";
+const MOVEMAP={};
+function optsHtml(i){
+  MOVEMAP[i.sig]=i.moves||[];
+  if(!i.moves||!i.moves.length) return '<div class="rec norec">No free pitch at this time &mdash; leave as-is.</div>';
+  var m=i.moves[0];
+  var rec='<div class="rec">&#9654; Recommended: move <b>'+m.cat+' '+m.team+'</b> to <b>'+m.to_g+' '+m.to_p+'</b> (same time)</div>';
+  var sel='<div class="fixrow"><label>Resolution:</label><select class="fixsel" data-sig="'+i.sig+'"><option value="">Leave as-is</option>'+
+    i.moves.map(function(m,mi){return '<option value="'+mi+'">'+m.label+(m.rec?' ★':'')+'</option>';}).join('')+'</select></div>';
+  return rec+sel;
+}
 const clashset=new Set();
 ISS.forEach(i=>i.games.forEach(x=>clashset.add(x)));
 const cnt=g=>DATA.filter(x=>x.ground===g).length;
@@ -180,15 +234,31 @@ const ib=document.getElementById('issues');
 if(!ISS.length){ib.innerHTML='<div class="none">&#10003; No rule breaches found.</div>';}
 else{ib.innerHTML=ISS.map(i=>'<div class="issue '+(i.rule.includes('location')?'loc':'')+'">'+
   '<div class="top">'+i.datedisp+' &middot; '+gsh(i.ground)+' Pitch '+i.field+' &middot; '+i.frm+'–'+i.until+' &mdash; '+i.rule+'</div>'+
-  '<div class="d">'+i.detail+'</div><ul>'+i.games.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>').join('');}
+  '<div class="d">'+i.detail+'</div><ul>'+i.games.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+optsHtml(i)+'</div>').join('');}
 document.getElementById('clashhead').textContent='Potential clashes ('+ISS.length+')';
 const u13b=document.getElementById('u13');
 if(!U13.length){u13b.innerHTML='<div class="none">&#10003; Every U13 game has its physical pitch to itself.</div>';}
 else{u13b.innerHTML=U13.map(i=>'<div class="issue u13">'+
   '<div class="top">'+i.datedisp+' &middot; '+gsh(i.ground)+' Pitch '+i.field+' &middot; '+i.frm+'–'+i.until+'</div>'+
   '<div class="d"><b>'+i.game+'</b> is sharing Pitch '+i.field+' with:</div><ul>'+i.sharing.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+
-  '<div class="d" style="margin-top:6px">Free full pitches then: '+(i.free.length?'<b style="color:#1e7d46">'+i.free.join(' &middot; ')+'</b>':'<b style="color:#c0392b">none free</b>')+'</div></div>').join('');}
+  '<div class="d" style="margin-top:6px">Free full pitches then: '+(i.free.length?'<b style="color:#1e7d46">'+i.free.join(' &middot; ')+'</b>':'<b style="color:#c0392b">none free</b>')+'</div>'+optsHtml(i)+'</div>').join('');}
 document.getElementById('u13head').textContent='U13 not on their own pitch ('+U13.length+')';
+const CHANGES={};
+function _line(m){return m.date+' — '+m.cat+' '+m.team+' ['+m.comp+']: move from '+m.frm_g+' '+m.frm_p+' ('+m.frm_t+') to '+m.to_g+' '+m.to_p+' — same time.';}
+function renderChanges(){
+  var keys=Object.keys(CHANGES),el=document.getElementById('changes');
+  document.getElementById('chghead').textContent='Proposed changes – email to FV ('+keys.length+')';
+  if(!keys.length){el.innerHTML='<div class="empty">No changes selected yet — pick a resolution on a clash above and it will be listed here, ready to email FV.</div>';return;}
+  el.innerHTML='<ol><li>'+keys.map(function(k){return _line(CHANGES[k]);}).join('</li><li>')+'</li></ol><button class="copybtn" onclick="copyEmail()">Copy for email</button>';
+}
+function copyEmail(){
+  var keys=Object.keys(CHANGES);
+  var body=keys.map(function(k,i){return (i+1)+'. '+_line(CHANGES[k]);}).join('\n');
+  var txt='Manningham United Blues — requested fixture changes (please action on Dribl):\n\n'+body+'\n';
+  navigator.clipboard.writeText(txt).then(function(){var b=document.querySelector('.copybtn');if(b){b.textContent='Copied ✓';setTimeout(function(){b.textContent='Copy for email';},1500);}});
+}
+document.querySelectorAll('.fixsel').forEach(function(s){s.onchange=function(){var sig=s.getAttribute('data-sig'),v=s.value;if(v===''){delete CHANGES[sig];}else{CHANGES[sig]=MOVEMAP[sig][+v];}renderChanges();};});
+renderChanges();
 let ground="All",q="",date="",sortk="time",asc=true;
 const chips=["All","Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve"];
 document.getElementById('chips').innerHTML=chips.map(c=>'<span class="chip'+(c==='All'?' active':'')+'" data-g="'+c+'">'+(c==='All'?'All grounds':gsh(c))+'</span>').join('');
