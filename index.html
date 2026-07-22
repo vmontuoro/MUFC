@@ -4,7 +4,10 @@
 :root{--navy:#1f3864;--blue:#2e5aac;--ink:#1a1a1a;--mut:#5a6472;--line:#e3e7ee;--band:#f6f8fb;}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fbfcfe}
-header{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:34px 22px}
+header{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:34px 22px;display:flex;align-items:center;gap:18px}
+.hlogo{height:70px;width:70px;object-fit:contain;flex:0 0 auto}
+.hmeta{min-width:0}
+@media(max-width:520px){.hlogo{height:50px;width:50px}}
 header h1{margin:0 0 6px;font-size:24px}
 header p{margin:0;opacity:.85;font-size:13.5px}
 .wrap{max-width:960px;margin:0 auto;padding:26px 22px 70px}
@@ -19,8 +22,10 @@ a.card .go{margin-top:12px;font-size:12.5px;font-weight:600;color:var(--blue)}
 .foot{color:var(--mut);font-size:11.5px;margin-top:30px;line-height:1.6}
 </style></head><body>
 <header>
+<img class="hlogo" src="logos/manningham-united-blues-fc.png" alt="Manningham United Blues FC"><div class="hmeta">
 <h1>Manningham United Blues &ndash; Fixtures Hub</h1>
 <p>Home-ground schedule, overlap checks &amp; match-day duties &middot; Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve</p>
+</div>
 </header>
 <div class="wrap">
 <div class="grid">
