@@ -30,15 +30,7 @@ def field_info(pitch,ground):
     p=pitch.replace(ground,"").strip()
     m=re.search(r'Pitch\s+(\d+)',p); return (m.group(1) if m else "?"),p
 def fmt(m): return f"{m//60:02d}:{m%60:02d}"
-def category(age,comp):
-    if comp=="Girls Clinic": return "MID"
-    if "All Abilities" in comp: return "AAL"
-    if age in ("U06","U07"): return "TINY"
-    if age in ("U08","U09"): return "SMALL"
-    if age in ("U10","U11","U12","U13"): return "MID"
-    return "BIG"
-UNIT={"TINY":.25,"SMALL":.25,"AAL":.5,"MID":.5,"BIG":1.0}
-CATLABEL={"TINY":"U6/7","SMALL":"U8/9","MID":"U10-13","BIG":"U14+","AAL":"All-Abilities"}
+from pitch_capacity import category,UNIT,CATLABEL   # shared with gen_fixtures / gen_xlsx
 import manual_games
 games=[]
 for ground,path in files.items():
@@ -231,6 +223,10 @@ tr.moved-new td{background:#eaf5ea!important;font-weight:600}
 #changes ol.chgblocks li{white-space:pre-line;margin-bottom:10px}
 .copybtn.alt{background:#fff;color:var(--navy);margin-left:8px}
 .copybtn.alt:hover{background:#eef2f8}
+.fvbox{margin-top:16px;padding:12px 14px;border:1px solid #f2d49b;background:#fdf8ee;border-radius:10px}
+.fvlbl{font-size:12.5px;color:#8a6100;line-height:1.5}
+.copybtn.fv{background:#9a6b00;border-color:#9a6b00;margin-top:9px}
+.copybtn.fv:hover{background:#7d5700}
 </style></head><body>
 <header><img class="hlogo" src="logos/manningham-united-blues-fc.png" alt="Manningham United Blues FC"><div class="hmeta"><h1>Manningham United Blues &ndash; Schedule &amp; Pitch-Rule Clash Check</h1>
 <p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; 17 Jul &rarr; mid-Sep 2026 &middot; Source: fv.dribl.com</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_setup_packup_plan.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Setup &amp; pack-up</a><a href="Manningham_fixtures.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Fixtures</a></div></div></header>
@@ -312,17 +308,57 @@ function _line(m){return [m.date+' '+(m.iso||'').slice(0,4),
   m.team+' v '+m.opp,
   'Old: '+m.frm_t+' — '+m.frm_g+' '+m.frm_p,
   'New: '+m.frm_t+' — '+m.to_g+' '+m.to_p].join('\n');}
+// --- Ground changes: FV must be told when a game moves to a DIFFERENT physical ground.
+// A move within the same ground at the same kick-off time is handled internally and is
+// deliberately excluded here.
+const GROUND_INTRO="Subject: Venue change — Manningham United Blues home fixtures\n\nDear Competitions,\n\n"+
+ "We need to notify you of a change of physical venue for the fixtures listed below. Each of these games is\n"+
+ "moving to a different ground, so the published venue will need to be updated in Dribl. Kick-off times are\n"+
+ "unchanged. Could you please action these and confirm once done:";
+function groundChanges(){
+  var out=[],seen={};
+  DATA.forEach(function(g){                       // already applied server-side from overrides.json
+    if(!(g.override&&g.moved_from)) return;
+    if(g.moved_from.ground===g.ground) return;    // same ground — no FV notification needed
+    seen[gkeyOf(g)]=1;
+    out.push({iso:g.iso,date:g.datedisp,team:g.home.replace('Manningham United Blues FC','MUFC'),opp:g.away,
+      comp:g.comp,time:g.time,frm_g:gsh(g.moved_from.ground),frm_p:g.moved_from.pitch,to_g:gsh(g.ground),to_p:g.pitch});
+  });
+  Object.keys(CHANGES).forEach(function(k){var m=CHANGES[k];   // picked in this session, not yet published
+    if(m.frm_g===m.to_g||seen[m.gkey]) return;
+    out.push({iso:m.iso,date:m.date,team:m.team,opp:m.opp,comp:m.comp,time:m.frm_t,
+      frm_g:m.frm_g,frm_p:m.frm_p,to_g:m.to_g,to_p:m.to_p});
+  });
+  out.sort(function(a,b){return a.iso===b.iso?(a.time<b.time?-1:1):(a.iso<b.iso?-1:1);});
+  return out;
+}
+function fvBox(){
+  var n=groundChanges().length;
+  if(!n) return '<div class="fvbox"><div class="fvlbl">No ground changes outstanding &mdash; every move keeps its game at the same ground, so FV does not need to be told.</div></div>';
+  return '<div class="fvbox"><div class="fvlbl"><b>'+n+' fixture'+(n===1?'':'s')+' change physical ground</b> and must be reported to FV. '+
+    'Moves that stay at the same ground and kick-off time are left out &mdash; those are handled internally.</div>'+
+    '<button class="copybtn fv" onclick="copyGroundEmail()">Copy FV ground-change email</button></div>';
+}
+function copyGroundEmail(){
+  var gc=groundChanges(); if(!gc.length) return;
+  var body=gc.map(function(m,i){return (i+1)+'. '+[m.date+' '+(m.iso||'').slice(0,4),
+    m.team+' v '+m.opp+(m.comp?' ('+m.comp+')':''),
+    'Currently: '+m.time+' — '+m.frm_g+' '+m.frm_p,
+    'Requested: '+m.time+' — '+m.to_g+' '+m.to_p].join('\n');}).join('\n\n');
+  var txt=GROUND_INTRO+'\n\n'+body+'\n\nKind regards,\nManningham United Blues FC';
+  navigator.clipboard.writeText(txt).then(function(){_flash(document.querySelector('.copybtn.fv'),'Copied ✓');});
+}
 document.getElementById('changes').innerHTML='<div class="intros"><div class="introlbl">Email opening (choose the reason):</div>'+INTROS.map(function(x,i){return '<label><input type="radio" name="intro" value="'+i+'"'+(i===1?' checked':'')+'> '+x.l+'</label>';}).join('')+'</div><div id="chglist"></div>';
 function selIntro(){var r=document.querySelector('input[name=intro]:checked');return INTROS[r?+r.value:1].t;}
 function renderChanges(){
   syncMoved();
   var keys=Object.keys(CHANGES),el=document.getElementById('chglist');
   document.getElementById('chghead').textContent='Proposed changes – email to FV ('+keys.length+')';
-  if(!keys.length){el.innerHTML='<div class="empty">No changes selected yet — pick a resolution on a clash above and it will be listed here, ready to email FV.</div>';render();return;}
+  if(!keys.length){el.innerHTML='<div class="empty">No changes selected yet — pick a resolution on a clash above and it will be listed here, ready to email FV.</div>'+fvBox();render();return;}
   el.innerHTML='<ol class="chgblocks"><li>'+keys.map(function(k){return _line(CHANGES[k]);}).join('</li><li>')+'</li></ol>'+
     '<button class="copybtn" onclick="copyEmail()">Copy for email</button>'+
     '<button class="copybtn alt" onclick="copyOverrides()">Copy overrides JSON</button>'+
-    '<button class="copybtn alt" onclick="dlOverrides()">Download overrides.json</button>';
+    '<button class="copybtn alt" onclick="dlOverrides()">Download overrides.json</button>'+fvBox();
   render();
 }
 function overrideRecords(){

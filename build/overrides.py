@@ -18,17 +18,32 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(HERE, "overrides.json")
 
 
+class OverridesError(RuntimeError):
+    """overrides.json exists but is unusable — never swallowed."""
+
+
 def load():
-    """Read overrides.json -> list (missing/empty/corrupt file yields [])."""
+    """Read overrides.json -> list. A missing file yields []; a corrupt one RAISES.
+
+    This deliberately does not fall back to []. The file is hand-edited between
+    refreshes, and quietly ignoring a stray comma would regenerate every page with
+    all manual moves dropped — a published site that looks perfectly healthy while
+    silently sending teams back to the pitches they were moved off.
+    """
     if not os.path.exists(PATH):
         return []
     try:
         with open(PATH, encoding="utf-8") as f:
             data = json.load(f)
-        return data if isinstance(data, list) else []
     except (ValueError, OSError) as e:
-        print("  ! overrides.json ignored (%s)" % e)
-        return []
+        raise OverridesError(
+            "%s is unreadable (%s).\n"
+            "     Fix the file (or delete it if the moves are no longer wanted) and re-run —\n"
+            "     refusing to publish with the manual moves silently dropped." % (PATH, e)) from e
+    if not isinstance(data, list):
+        raise OverridesError("%s must hold a JSON list of override records, got %s"
+                             % (PATH, type(data).__name__))
+    return data
 
 
 def dates(ovr=None):
@@ -46,11 +61,14 @@ def apply(games, gkey_of):
     if not ovr:
         return 0
     by_key = {o.get("gkey"): o for o in ovr if o.get("gkey")}
+    unmatched = set(by_key)
     n = 0
     for g in games:
-        o = by_key.get(gkey_of(g))
+        key = gkey_of(g)
+        o = by_key.get(key)
         if not o:
             continue
+        unmatched.discard(key)
         # gen_duties games have no "field" key — keep this tolerant of both game shapes
         g["moved_from"] = {"ground": g["ground"], "pitch": g["pitch"], "field": g.get("field", "")}
         g["override"] = True
@@ -58,4 +76,10 @@ def apply(games, gkey_of):
         g["field"] = str(o.get("to_field", g.get("field", "")))
         g["pitch"] = o.get("to_pitch") or ("Pitch " + g["field"])
         n += 1
+    if unmatched:
+        # A gkey that ties to no fixture does nothing at all — the move just never
+        # happens. Loud, because the page still renders fine without it.
+        print("  ! %d override(s) matched NO fixture and had no effect:" % len(unmatched))
+        for k in sorted(unmatched):
+            print("      %s" % k)
     return n
