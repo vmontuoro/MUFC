@@ -9,6 +9,13 @@ The site is data-driven: Python generators in `build/` parse text dumps of Dribl
 fixtures page and produce the published files. Follow these steps in order.
 
 Which generator produces which page:
+All four generators apply `build/overrides.json` and share one clash rule (`build/pitch_capacity.py`:
+U14+/Seniors = 1.0 and must be alone, U10-13 = 0.5, U6-9 = 0.25, All-Abilities = 0.5; a field is
+flagged only when concurrent games sum > 1.0). Two guards worth knowing:
+- a malformed `overrides.json` now **raises** and fails the run — it is never silently ignored;
+- an override whose `gkey` matches no fixture prints `! N override(s) matched NO fixture`. Read that
+  warning: the move simply does not happen, and every page still renders fine without it.
+
 - `gen_duties.py`   → `duties_data.js`  (the **setup/pack-up page** loads this — it's DECOUPLED, so refreshing data never touches that page's rich UI)
 - `gen_clashes.py`  → `Manningham_schedule_clashes.html`  (whole file regenerated)
 - `gen_fixtures.py` → `Manningham_fixtures.html`

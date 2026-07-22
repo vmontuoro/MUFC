@@ -1,6 +1,7 @@
 import re, json, datetime as dt, os
 from itertools import combinations
 from dribl_parse import read
+from pitch_capacity import category,CATLABEL,conflicts
 HERE=os.path.dirname(os.path.abspath(__file__)); OUTDIR=os.path.dirname(HERE)
 OUT=os.path.join(OUTDIR,"Manningham_fixtures.html")
 files={"Pettys Reserve":os.path.join(HERE,"raw_pettys.txt"),"Powerful Owl Park":os.path.join(HERE,"raw_powl.txt"),"Timber Ridge Reserve":os.path.join(HERE,"raw_timber.txt"),"Wilsons Rd Reserve":os.path.join(HERE,"raw_wilsons.txt")}
@@ -34,17 +35,24 @@ for ground,path in files.items():
     for date_s,time_s,home,away,comp,pitch,rnd in _tuples:
         d=parse_date(date_s); hh,mm=map(int,time_s.split(":")); start=hh*60+mm
         dur=duration(home+" "+away,comp); num,ftype,plabel=field_info(pitch,ground)
+        _age=age_token(home if "Manningham" in home else away+" "+home)
         games.append(dict(date=d,iso=d.isoformat(),datedisp=d.strftime("%a %d %b"),day=date_s.split()[0],time=time_s,start=start,
             end=start+dur,endt=fmt(start+dur),ground=ground,field=num,ftype=ftype,pitch=plabel,
-            age=age_token(home if "Manningham" in home else away+" "+home),home=home,away=away,comp=comp.split("|")[0].strip(),
+            cat=category(_age,comp.split("|")[0].strip()),
+            age=_age,home=home,away=away,comp=comp.split("|")[0].strip(),
             grade=comp.split("|")[1].strip() if "|" in comp else "",rnd=rnd.replace("Round ","R"),clash=False))
-buckets={}
-for g in games: buckets.setdefault((g["ground"],g["iso"],g["field"]),[]).append(g)
-for gs in buckets.values():
-    for a,b in combinations(gs,2):
-        if a["start"]<b["end"] and b["start"]<a["end"]:
-            if a["ftype"]=="Sub" and b["ftype"]=="Sub" and a["pitch"]!=b["pitch"]: continue
-            a["clash"]=b["clash"]=True
+import overrides as _ovr
+def gkey_of(g):
+    """Must match gen_clashes.gkey_of exactly: iso|ground|pitch|time|home"""
+    return "|".join([g["iso"],g["ground"],g["pitch"],g["time"],g["home"]])
+# Apply saved manual moves BEFORE the overlap check, so this page agrees with the
+# clash page about where a game is actually being played.
+if _ovr.apply(games,gkey_of):
+    for g in games:                       # pitch changed, so field number / Full-vs-Sub must follow
+        if g.get("override"): g["field"],g["ftype"],_=field_info(g["pitch"],g["ground"])
+# Clash = OVER CAPACITY, not merely "two games on one field" — see pitch_capacity.py.
+for c in conflicts(games,lambda g:(g["ground"],g["iso"],g["field"])):
+    for g in c["games"]: g["clash"]=True
 peak={}; dd={}
 for g in games: dd.setdefault((g["ground"],g["iso"]),[]).append(g)
 for (gr,iso),gs in dd.items():
@@ -64,7 +72,11 @@ for gr in ["Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve","Wilsons 
     gg=[g for g in games if g["ground"]==gr]
     gsummary.append(dict(ground=gr,n=len(gg),
         rng=f'{min(x["date"] for x in gg).strftime("%d %b")} – {max(x["date"] for x in gg).strftime("%d %b")}' if gg else "–",peak=peak.get(gr)))
-rows=[{k:g[k] for k in ("iso","datedisp","day","time","endt","ground","field","ftype","pitch","age","home","away","comp","grade","rnd","clash")} for g in games]
+rows=[]
+for g in games:
+    r={k:g[k] for k in ("iso","datedisp","day","time","endt","ground","field","ftype","pitch","age","home","away","comp","grade","rnd","clash")}
+    if g.get("override"): r["moved_from"]=g["moved_from"]
+    rows.append(r)
 DATA=json.dumps(rows); SUM=json.dumps(gsummary)
 TEMPLATE=r'''<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Manningham – Fixtures & Overlap Check</title>
@@ -99,6 +111,8 @@ table.games tr:nth-child(even) td{background:var(--band)}
 .badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;background:#eef2f8;color:var(--mut)}
 .full{background:#e8f0ff;color:#2e5aac}
 .tag-date{font-weight:600;white-space:nowrap}
+.movedbadge{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:5px;background:#fdf0d8;color:#9a6b00;border:1px solid #f2d49b;margin-left:4px}
+.wasnote{font-size:10.5px;color:var(--mut);margin-top:2px}.wasnote s{opacity:.75}
 .foot{color:var(--mut);font-size:11px;margin-top:22px}
 </style></head><body>
 <header><img class="hlogo" src="logos/manningham-united-blues-fc.png" alt="Manningham United Blues FC"><div class="hmeta"><h1>Manningham United Blues &ndash; Fixtures &amp; Overlap Check</h1>
@@ -107,7 +121,7 @@ table.games tr:nth-child(even) td{background:var(--band)}
 <div class="cards" id="cards"></div>
 <h2>Overlap &amp; clash check</h2>
 <div id="okbox"></div>
-<div class="meth"><b>Clash logic:</b> two games on the same ground + field number whose times overlap, where at least one uses the full field or both use the exact same pitch (two different sub-pitches at once are not a clash). Durations estimated: MiniRoos 40m, All-Abilities 25m, U12&ndash;14 60m, U15&ndash;18 70m, Seniors/U20&ndash;23 90m.</div>
+<div class="meth"><b>Clash logic (pitch capacity):</b> a full pitch = <b>1.0</b>. <b>U14 &amp; older</b> = whole pitch and must be alone; <b>U10&ndash;U13</b> = &frac12; each; <b>U6&ndash;U9</b> = &frac14; each; <b>All-Abilities</b> = &frac12;. A field is flagged when the games running at the same moment add up to more than 1.0 &mdash; so several small-sided games sharing one field is <i>not</i> a clash. Same rules as the <a href="Manningham_schedule_clashes.html" style="color:var(--mut)">clash check</a>. Durations estimated: MiniRoos 40m, All-Abilities 25m, U12&ndash;14 60m, U15&ndash;18 70m, Seniors/U20&ndash;23 90m.</div>
 <h2>Peak simultaneous games per ground</h2>
 <table class="peak"><thead><tr><th>Ground</th><th>Max at once</th><th>Date</th><th>From</th><th>Until</th><th>Pitches in use then</th></tr></thead><tbody id="peakbody"></tbody></table>
 <h2>All fixtures</h2>
@@ -127,10 +141,10 @@ const clashes=DATA.filter(g=>g.clash).length;
 document.getElementById('cards').innerHTML=
  '<div class="card"><div class="n">'+DATA.length+'</div><div class="l">Total home fixtures</div></div>'+
  SUM.map(s=>'<div class="card"><div class="n">'+s.n+'</div><div class="l">'+s.ground+'</div><div class="s">'+s.rng+'</div></div>').join('')+
- '<div class="card"><div class="n" style="color:'+(clashes?'#c0392b':'#2e7d32')+'">'+clashes+'</div><div class="l">Field double-bookings</div></div>';
+ '<div class="card"><div class="n" style="color:'+(clashes?'#c0392b':'#2e7d32')+'">'+clashes+'</div><div class="l">Over-capacity games</div></div>';
 document.getElementById('okbox').innerHTML=clashes?
- '<div class="ok" style="background:#fdeceb;border-color:#f0c9c4;color:#8a2b22">'+clashes+' game(s) share a physical field at overlapping times – see highlighted rows.</div>':
- '<div class="ok">&#10003; <b>No physical double-bookings.</b> Concurrent games always sit on separate pitches / sub-pitches.</div>';
+ '<div class="ok" style="background:#fdeceb;border-color:#f0c9c4;color:#8a2b22">'+clashes+' game(s) sit on a field that is over capacity at the time &ndash; see highlighted rows.</div>':
+ '<div class="ok">&#10003; <b>No pitch is over capacity.</b> Where games share a field, the age groups fit within the 1.0 limit.</div>';
 document.getElementById('peakbody').innerHTML=SUM.map(s=>s.peak?
  '<tr><td>'+s.ground+'</td><td class="n">'+s.peak.n+'</td><td>'+s.peak.date+'</td><td>'+s.peak.frm+'</td><td>'+s.peak.until+'</td><td>'+s.peak.pitches.join(', ')+'</td></tr>':'').join('');
 let ground="All",q="",sortk="iso",asc=true;
@@ -147,7 +161,8 @@ function render(){
  document.getElementById('tb').innerHTML=r.map(g=>'<tr>'+
   '<td class="tag-date">'+g.datedisp+'</td><td>'+g.time+'</td><td>'+g.endt+'</td>'+
   '<td class="'+gcl(g.ground)+'">'+gsh(g.ground)+'</td>'+
-  '<td>'+g.pitch+'</td><td><span class="badge '+(g.ftype==='Full'?'full':'')+'">'+g.ftype+'</span></td>'+
+  '<td>'+g.pitch+(g.moved_from?'<span class="movedbadge">MOVED</span><div class="wasnote">was <s>'+gsh(g.moved_from.ground)+' &middot; '+g.moved_from.pitch+'</s> &mdash; pending FV</div>':'')+'</td>'+
+  '<td><span class="badge '+(g.ftype==='Full'?'full':'')+'">'+g.ftype+'</span></td>'+
   '<td>'+g.age+'</td><td>'+g.home+'</td><td>'+g.away+'</td><td>'+g.comp+'</td><td>'+g.grade+'</td><td>'+g.rnd+'</td></tr>').join('');
 }
 render();

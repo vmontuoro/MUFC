@@ -10,6 +10,7 @@ except ImportError:
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     from openpyxl.utils import get_column_letter
 from dribl_parse import read
+from pitch_capacity import category,CATLABEL,conflicts
 HERE=os.path.dirname(os.path.abspath(__file__)); OUTDIR=os.path.dirname(HERE)
 OUT=os.path.join(OUTDIR,"Manningham_fixtures_and_overlaps.xlsx")
 files={"Pettys Reserve":os.path.join(HERE,"raw_pettys.txt"),"Powerful Owl Park":os.path.join(HERE,"raw_powl.txt"),"Timber Ridge Reserve":os.path.join(HERE,"raw_timber.txt"),"Wilsons Rd Reserve":os.path.join(HERE,"raw_wilsons.txt")}
@@ -44,16 +45,24 @@ for ground,path in files.items():
         d=parse_date(date_s); hh,mm=map(int,time_s.split(":")); start=hh*60+mm
         dur=duration(home+" "+away,comp); num,ftype,plabel=field_info(pitch,ground)
         cp=[x.strip() for x in comp.split("|")]
+        _age=age_token(home if "Manningham" in home else away+" "+home)
         games.append(dict(date=d,day=date_s.split()[0],time=time_s,start=start,end=start+dur,dur=dur,ground=ground,
-            field=num,ftype=ftype,pitch=plabel,age=age_token(home if "Manningham" in home else away+" "+home),
+            field=num,ftype=ftype,pitch=plabel,age=_age,cat=category(_age,cp[0]),
             home=home,away=away,comp=cp[0],grade=cp[1] if len(cp)>1 else "",rnd=rnd.replace("Round ","R"),clash=""))
-clashes=[]; buckets={}
-for g in games: buckets.setdefault((g["ground"],g["date"],g["field"]),[]).append(g)
-for gs in buckets.values():
-    for a,b in combinations(gs,2):
-        if a["start"]<b["end"] and b["start"]<a["end"]:
-            if a["ftype"]=="Sub" and b["ftype"]=="Sub" and a["pitch"]!=b["pitch"]: continue
-            a["clash"]="YES"; b["clash"]="YES"; clashes.append((a,b))
+import overrides as _ovr
+def gkey_of(g):
+    """Must match gen_clashes.gkey_of exactly: iso|ground|pitch|time|home"""
+    return "|".join([g["date"].isoformat(),g["ground"],g["pitch"],g["time"],g["home"]])
+# Apply saved manual moves BEFORE the overlap check, so the sheet agrees with the
+# clash page about where a game is actually being played.
+if _ovr.apply(games,gkey_of):
+    for g in games:                       # pitch changed, so field number / Full-vs-Sub must follow
+        if g.get("override"): g["field"],g["ftype"],_=field_info(g["pitch"],g["ground"])
+# Clash = OVER CAPACITY, not merely "two games on one field" — see pitch_capacity.py.
+clashes=conflicts(games,lambda g:(g["ground"],g["date"],g["field"]))
+for c in clashes:
+    for g in c["games"]: g["clash"]="YES"
+clashes.sort(key=lambda c:(c["key"][1],c["key"][0],c["key"][2],c["at"]))
 peak={}; daydict={}
 for g in games: daydict.setdefault((g["ground"],g["date"]),[]).append(g)
 for (gr,d),gs in daydict.items():
@@ -79,13 +88,16 @@ def style_header(ws,ncols,row=1):
         cell=ws.cell(row=row,column=c); cell.fill=hdr_fill; cell.font=hdr_font; cell.alignment=center; cell.border=border
     ws.freeze_panes=ws.cell(row=row+1,column=1)
 ws=wb.active; ws.title="All Games"
-cols=["Date","Day","KO","Est.End","Dur(m)","Ground","Field","Pitch Type","Pitch","Age/Grp","Home","Away","Competition","Grade","Rnd","Clash?"]
+# "Moved From" goes last so the hard-coded Clash? column index (16) below stays put.
+cols=["Date","Day","KO","Est.End","Dur(m)","Ground","Field","Pitch Type","Pitch","Age/Grp","Home","Away","Competition","Grade","Rnd","Clash?","Moved From (pending FV)"]
 ws.append(cols)
 for g in games:
+    mf=g.get("moved_from")
     ws.append([g["date"].strftime("%d %b %Y"),g["day"],g["time"],fmt2(g["end"]),g["dur"],g["ground"],g["field"],
-        g["ftype"],g["pitch"],g["age"],g["home"],g["away"],g["comp"],g["grade"],g["rnd"],g["clash"]])
+        g["ftype"],g["pitch"],g["age"],g["home"],g["away"],g["comp"],g["grade"],g["rnd"],g["clash"],
+        f'{mf["ground"]} {mf["pitch"]}' if mf else ""])
 style_header(ws,len(cols))
-for i,w in enumerate([12,5,7,8,7,17,6,10,27,8,42,42,34,26,5,7],1): ws.column_dimensions[get_column_letter(i)].width=w
+for i,w in enumerate([12,5,7,8,7,17,6,10,27,8,42,42,34,26,5,7,34],1): ws.column_dimensions[get_column_letter(i)].width=w
 for r in range(2,ws.max_row+1):
     cl=ws.cell(row=r,column=16).value=="YES"
     for c in range(1,len(cols)+1):
@@ -95,24 +107,25 @@ for r in range(2,ws.max_row+1):
         elif r%2==0: cell.fill=band
 ws.auto_filter.ref=f"A1:{get_column_letter(len(cols))}{ws.max_row}"
 ws2=wb.create_sheet("Overlaps & Peak Load")
-intro=["Overlap & clash check",
- "A CLASH = two games on the SAME physical field whose times overlap, where at least one uses the FULL field or both use the exact same pitch.",
- "Two DIFFERENT sub-pitches (quarter / midi) at once are NOT a clash - fields are deliberately subdivided.",
+intro=["Overlap & clash check (pitch capacity)",
+ "A full pitch is worth 1.0.  U14+/Seniors = 1.0 and must have the pitch alone;  U10-U13 = 0.5;  U6-U9 = 0.25;  All-Abilities = 0.5.",
+ "A CLASH = the games running at the same moment on one physical field add up to MORE than 1.0. Small-sided games sharing a field is NOT a clash.",
+ "Same rules as the clash-check web page, so the two always agree.",
  "Durations ESTIMATED: MiniRoos 40m, All-Abilities 25m, U12-14 60m, U15-18 70m, Seniors/U20-23 90m."]
 for line in intro: ws2.append([line])
 ws2["A1"].font=Font(name=FONT,bold=True,size=13,color="1F3864")
-for r in range(2,5): ws2.cell(row=r,column=1).font=Font(name=FONT,size=9,italic=True,color="595959")
+for r in range(2,len(intro)+1): ws2.cell(row=r,column=1).font=Font(name=FONT,size=9,italic=True,color="595959")
 ws2.append([])
-ws2.append([f"A.  Field double-bookings (hard clashes): {len(clashes)} found"])
+ws2.append([f"A.  Over-capacity moments: {len(clashes)} found"])
 ws2.cell(row=ws2.max_row,column=1).font=Font(name=FONT,bold=True,size=11,color="9C0006" if clashes else "375623")
 if clashes:
-    ws2.append(["#","Date","Ground","Field","Game A (KO-End)","Pitch A","Game B (KO-End)","Pitch B","Overlap"]); hrow=ws2.max_row
-    clashes.sort(key=lambda p:(p[0]["date"],p[0]["ground"],p[0]["field"],p[0]["start"]))
-    for n,(a,b) in enumerate(clashes,1):
-        ws2.append([n,a["date"].strftime("%d %b %Y"),a["ground"],a["field"],
-            f'{a["time"]}-{fmt2(a["end"])} {a["age"]} {a["comp"]}',f'{a["pitch"]} ({a["ftype"]})',
-            f'{b["time"]}-{fmt2(b["end"])} {b["age"]} {b["comp"]}',f'{b["pitch"]} ({b["ftype"]})',
-            f'{fmt2(max(a["start"],b["start"]))}-{fmt2(min(a["end"],b["end"]))}'])
+    ws2.append(["#","Date","Ground","Field","From","Until","Rule broken","Load","Games in that window"]); hrow=ws2.max_row
+    for n,c in enumerate(clashes,1):
+        gr,d,fl=c["key"]
+        ws2.append([n,d.strftime("%d %b %Y"),gr,fl,fmt2(c["at"]),fmt2(c["until"]),c["rule"],
+            f'{c["mix"]} = {c["units"]:g}',
+            "  |  ".join(f'{g["time"]} {g["age"]} {g["pitch"]} ({g["home"]} v {g["away"]})'
+                         for g in sorted(c["games"],key=lambda x:x["start"]))])
     style_header(ws2,9,row=hrow)
     for r in range(hrow+1,ws2.max_row+1):
         for c in range(1,10):
@@ -120,7 +133,7 @@ if clashes:
             cell.alignment=center if c in (1,2,3,4,6,8,9) else left
             if r%2==0: cell.fill=band
 else:
-    ws2.append(["None. No two games share the same physical field at overlapping times."])
+    ws2.append(["None. Where games share a physical field, the age groups fit within the 1.0 limit."])
     ws2.cell(row=ws2.max_row,column=1).font=Font(name=FONT,size=9,italic=True)
 ws2.append([]); ws2.append([])
 ws2.append(["B.  Peak simultaneous games per ground (busiest moment)"])
@@ -135,7 +148,7 @@ for r in range(brow+1,ws2.max_row+1):
         cell=ws2.cell(row=r,column=c); cell.font=Font(name=FONT,size=9); cell.border=border
         cell.alignment=center if c in (2,3,4,5) else left
         if r%2==0: cell.fill=band
-for i,w in enumerate([18,12,17,8,8,62],1): ws2.column_dimensions[get_column_letter(i)].width=w
+for i,w in enumerate([18,13,17,9,9,30,30,26,84],1): ws2.column_dimensions[get_column_letter(i)].width=w
 ws3=wb.create_sheet("Summary",0)
 ws3.append(["Manningham United Blues - Home Fixtures & Overlap Check"])
 ws3.append(["Grounds: Pettys Reserve, Powerful Owl Park, Timber Ridge Reserve"])
@@ -146,7 +159,7 @@ for gr in ["Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve"]:
     dr=f'{min(x["date"] for x in gg).strftime("%d %b")} - {max(x["date"] for x in gg).strftime("%d %b %Y")}' if gg else "-"
     ws3.append([gr,len(gg),dr])
 ws3.append(["TOTAL",len(games),""]); ws3.append([])
-ws3.append(["Field double-bookings (clashes) flagged",len(clashes)])
+ws3.append(["Over-capacity moments flagged",len(clashes)])
 ws3["A1"].font=Font(name=FONT,bold=True,size=14,color="1F3864")
 for r in (2,3): ws3.cell(row=r,column=1).font=Font(name=FONT,size=9,italic=True,color="595959")
 for c in range(1,4):
