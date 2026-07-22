@@ -132,9 +132,22 @@ for grp in _pw.values():
     grp.sort(key=lambda g:g["start"])
     for i,g in enumerate(grp):
         if any(_ov(g["start"],g["_cre"],h["start"],h["_cre"]) for h in grp[:i]): g["cr_clash"]=True
+# For every overridden game, add a "ghost" of the ORIGINAL booking so the old pitch still shows it
+# struck through (mirrors the clash page). Added AFTER all duty / change-room logic so ghosts never
+# influence who sets up or which change room is allocated.
+for g in [x for x in games if x.get("override")]:
+    gh=dict(g)
+    gh["ground"]=g["moved_from"]["ground"]; gh["pitch"]=g["moved_from"]["pitch"]
+    gh["gord"]=GORD.get(gh["ground"],g["gord"])
+    gh["ghost"]=True; gh["moved_to"]={"ground":g["ground"],"pitch":g["pitch"]}
+    gh["setup"]=False; gh["packup"]=False; gh["stasks"]=[]; gh["ptasks"]=[]
+    gh["home_cr"]=0; gh["away_cr"]=0; gh["cr_clash"]=False
+    gh.pop("override",None); gh.pop("moved_from",None)
+    games.append(gh)
 games.sort(key=lambda g:(g["date"],g["gord"],g["pitch"],g["start"]))
 rows=[dict({k:g[k] for k in ("iso","datedisp","ground","pitch","time","age","band","team","home","away","mufc","home_mufc","setup","packup","stasks","ptasks","rnd","comp","home_cr","away_cr","cr_clash","manual")},
-           **({"override":True,"moved_from":g["moved_from"]} if g.get("override") else {})) for g in games]
+           **({"override":True,"moved_from":g["moved_from"]} if g.get("override") else {}),
+           **({"ghost":True,"moved_to":g["moved_to"]} if g.get("ghost") else {})) for g in games]
 DATA=json.dumps(rows)
 _mt=max(os.path.getmtime(p) for p in files.values() if os.path.exists(p))
 UPD=dt.date.fromtimestamp(_mt).strftime("%d %b %Y").lstrip("0")
