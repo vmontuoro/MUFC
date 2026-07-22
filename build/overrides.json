@@ -1,31 +1,5 @@
 [
  {
-  "gkey": "2026-08-02|Powerful Owl Park|Pitch 1B|11:40|Manningham United Blues FC U13 Juniors - B Mixed (Samir)",
-  "iso": "2026-08-02",
-  "home": "MUFC U13 Juniors - B Mixed (Samir)",
-  "away": "Eastern Lions SC U13 Juniors - B Mixed",
-  "comp": "Junior Mixed Sunday (U12 - U16)",
-  "time": "11:40",
-  "from_ground": "Powerful Owl",
-  "from_pitch": "Pitch 1B",
-  "to_ground": "Powerful Owl Park",
-  "to_field": "3",
-  "to_pitch": "Pitch 3"
- },
- {
-  "gkey": "2026-08-02|Powerful Owl Park|Pitch 2A|10:15|Manningham United Blues FC U13 Juniors - C Female (Abigail)",
-  "iso": "2026-08-02",
-  "home": "MUFC U13 Juniors - C Female (Abigail)",
-  "away": "Whitehorse United SC U13 Juniors - C Female Ray",
-  "comp": "Junior Girls Sunday (U12 - U18)",
-  "time": "10:15",
-  "from_ground": "Powerful Owl",
-  "from_pitch": "Pitch 2A",
-  "to_ground": "Powerful Owl Park",
-  "to_field": "3",
-  "to_pitch": "Pitch 3"
- },
- {
   "gkey": "2026-08-02|Powerful Owl Park|Pitch 2B|11:45|Manningham United Blues FC U13 Juniors - A Mixed (George & George)",
   "iso": "2026-08-02",
   "home": "MUFC U13 Juniors - A Mixed (George & George)",
@@ -108,7 +82,7 @@
   "iso": "2026-09-06",
   "home": "MUFC U13 Juniors - B Mixed (Samir)",
   "away": "Croydon Ranges SC U13 Juniors - B Mixed Croydon Ranges U13 Sundays Blue",
-  "comp": "Junior Mixed Sunday (U12 - U16)",
+  "comp": "Junior Mixed Sunday (U12 - 08U16)",
   "time": "11:40",
   "from_ground": "Powerful Owl",
   "from_pitch": "Pitch 1 - Midi Field B",
