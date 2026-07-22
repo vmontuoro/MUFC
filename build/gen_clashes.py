@@ -4,7 +4,11 @@ HERE=os.path.dirname(os.path.abspath(__file__)); OUTDIR=os.path.dirname(HERE)
 OUT=os.path.join(OUTDIR,"Manningham_schedule_clashes.html")
 files={"Pettys Reserve":os.path.join(HERE,"raw_pettys.txt"),"Powerful Owl Park":os.path.join(HERE,"raw_powl.txt"),"Timber Ridge Reserve":os.path.join(HERE,"raw_timber.txt")}
 MONTHS={m:i for i,m in enumerate(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],1)}
-CUTOFF=dt.date(2026,7,17)
+CUTOFF=dt.date(2026,7,17)          # earliest game shown anywhere on the page
+# Only PROPOSE moves for games from the upcoming Friday onward — anything sooner is already
+# played or too imminent for FV to action. Rolls forward automatically on each regenerate.
+_today=dt.date.today()
+PROPOSE_FROM=_today+dt.timedelta(days=(4-_today.weekday())%7)   # Mon=0 … Fri=4
 def parse_date(s):
     p=s.split(); return dt.date(int(p[3]),MONTHS[p[2][:3]],int(p[1]))
 def duration(t,comp):
@@ -149,6 +153,8 @@ for g in games:
     free=[gsh_py(gr)+" Pitch "+fl for gr,fl in ALLFIELDS if not (gr==g["ground"] and fl==g["field"]) and field_free(gr,fl,g["iso"],g["start"],g["end"])]
     u13iss.append(dict(date=g["date"],datedisp=g["date"].strftime("%a %d %b"),ground=g["ground"],field=g["field"],frm=g["time"],until=g["endt"],game=desc(g),sharing=[desc(o) for o in others],free=free,
         moves=opts_for([g],need_empty=True),sig="U|"+g["iso"]+"|"+g["ground"]+"|"+g["field"]+"|"+g["time"]))
+u13iss=[x for x in u13iss if x["date"]>=PROPOSE_FROM]   # proposals only from the upcoming Friday
+issues=[x for x in issues if x["date"]>=PROPOSE_FROM]
 u13iss.sort(key=lambda x:(x["date"],x["ground"],x["field"],x["frm"]))
 issues.sort(key=lambda x:(x["date"],x["ground"],x["field"],x["frm"]))
 games.sort(key=lambda g:(g["date"],g["ground"],g["start"]))
@@ -174,6 +180,7 @@ header h1{margin:0 0 4px;font-size:21px}header p{margin:0;opacity:.85;font-size:
 h2{font-size:15px;color:var(--navy);margin:26px 0 10px;border-bottom:2px solid var(--line);padding-bottom:6px}
 .rules{background:var(--band);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:1.6;color:#334}
 .rules b{color:var(--navy)}
+.pfrom{font-size:12px;color:var(--mut);margin:-4px 0 10px}
 .issue{border:1px solid #f0c9c4;background:var(--redbg);border-radius:10px;padding:11px 14px;margin:9px 0}
 .issue.loc{border-color:#f2d49b;background:#fdf6e8}
 .issue .top{font-weight:700;color:var(--red);font-size:13px}
@@ -231,6 +238,7 @@ Allowed combos on one pitch at the same time: 2&times;U10-13 &nbsp;|&nbsp; 1&tim
 <span style="color:#667">(Overlap uses match + warm-up windows: All-Abilities 40m, U6&ndash;9 45m, U10&ndash;11 65m, U12&ndash;14 75m, U15 90m, U16&ndash;17 100m, U18 110m, Seniors/U20&ndash;23 120m. "Pitch" = physical field.)</span>
 </div>
 <h2 id="clashhead">Potential clashes</h2>
+<div class="pfrom">Only games from <b>__PFROM__</b> onward are proposed &mdash; earlier games are already played or too close to move. The full schedule below still shows the whole season.</div>
 <div id="issues"></div>
 <h2 id="u13head">U13 not on their own pitch</h2>
 <div id="u13"></div>
@@ -373,5 +381,5 @@ function render(){
 }
 renderChanges();   // also performs the initial render() of the table
 </script></body></html>'''
-open(OUT,"w",encoding="utf-8").write(TEMPLATE.replace("__DATA__",DATA).replace("__ISS__",ISS).replace("__U13__",U13J))
+open(OUT,"w",encoding="utf-8").write(TEMPLATE.replace("__DATA__",DATA).replace("__ISS__",ISS).replace("__U13__",U13J).replace("__PFROM__",PROPOSE_FROM.strftime("%a %d %b %Y")))
 print("clashes:",len(games),"games,",len(issues),"issues ->",OUT)
