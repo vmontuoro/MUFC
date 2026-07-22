@@ -12,7 +12,7 @@ except ImportError:
 from dribl_parse import read
 HERE=os.path.dirname(os.path.abspath(__file__)); OUTDIR=os.path.dirname(HERE)
 OUT=os.path.join(OUTDIR,"Manningham_fixtures_and_overlaps.xlsx")
-files={"Pettys Reserve":os.path.join(HERE,"raw_pettys.txt"),"Powerful Owl Park":os.path.join(HERE,"raw_powl.txt"),"Timber Ridge Reserve":os.path.join(HERE,"raw_timber.txt")}
+files={"Pettys Reserve":os.path.join(HERE,"raw_pettys.txt"),"Powerful Owl Park":os.path.join(HERE,"raw_powl.txt"),"Timber Ridge Reserve":os.path.join(HERE,"raw_timber.txt"),"Wilsons Rd Reserve":os.path.join(HERE,"raw_wilsons.txt")}
 MONTHS={m:i for i,m in enumerate(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],1)}
 def parse_date(s):
     p=s.split(); return dt.date(int(p[3]),MONTHS[p[2][:3]],int(p[1]))

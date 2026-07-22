@@ -2,7 +2,7 @@ import re, json, datetime as dt, os
 from dribl_parse import read
 HERE=os.path.dirname(os.path.abspath(__file__)); OUTDIR=os.path.dirname(HERE)
 OUT=os.path.join(OUTDIR,"Manningham_schedule_clashes.html")
-files={"Pettys Reserve":os.path.join(HERE,"raw_pettys.txt"),"Powerful Owl Park":os.path.join(HERE,"raw_powl.txt"),"Timber Ridge Reserve":os.path.join(HERE,"raw_timber.txt")}
+files={"Pettys Reserve":os.path.join(HERE,"raw_pettys.txt"),"Powerful Owl Park":os.path.join(HERE,"raw_powl.txt"),"Timber Ridge Reserve":os.path.join(HERE,"raw_timber.txt"),"Wilsons Rd Reserve":os.path.join(HERE,"raw_wilsons.txt")}
 MONTHS={m:i for i,m in enumerate(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],1)}
 CUTOFF=dt.date(2026,7,17)          # earliest game shown anywhere on the page
 # Only PROPOSE moves for games from the upcoming Friday onward — anything sooner is already
@@ -63,7 +63,7 @@ issues=[]; buckets={}
 for g in games: buckets.setdefault((g["ground"],g["iso"],g["field"]),[]).append(g)
 def desc(g): return f'{g["time"]} {g["catlabel"]} {g["pitch"]} ({g["home"].replace("Manningham United Blues FC","MUFC")} v {g["away"]})'
 # ---- clash-resolution: free-pitch alternatives + which game to move (priority) ----
-def gsh_py(g): return "Pettys" if g=="Pettys Reserve" else ("Powerful Owl" if g=="Powerful Owl Park" else "Timber Ridge")
+def gsh_py(g): return {"Pettys Reserve":"Pettys","Powerful Owl Park":"Powerful Owl","Wilsons Rd Reserve":"Wilsons"}.get(g,"Timber Ridge")
 ALLFIELDS=[("Pettys Reserve","1"),("Pettys Reserve","2"),("Powerful Owl Park","1"),("Powerful Owl Park","2"),("Powerful Owl Park","3"),("Timber Ridge Reserve","1"),("Timber Ridge Reserve","2")]
 def field_free(gr,fl,iso,s,e):
     return all(not (o["start"]<e and s<o["end"]) for o in buckets.get((gr,iso,fl),[]))
@@ -135,6 +135,13 @@ for (ground,iso,field),gs in buckets.items():
             issues.append(dict(date=gs[0]["date"],datedisp=gs[0]["date"].strftime("%a %d %b"),ground=ground,field=field,
                 frm=fmt(t),until=fmt(win_e),rule=rule,detail=detail,games=[desc(g) for g in sorted(active,key=lambda x:x["start"])],
                 moves=opts_for(active),sig="C|"+iso+"|"+ground+"|"+field+"|"+fmt(t)))
+# Wilsons Rd Reserve is not available to the club at all — any game scheduled there is an error.
+for g in games:
+    if g["ground"]=="Wilsons Rd Reserve":
+        issues.append(dict(date=g["date"],datedisp=g["date"].strftime("%a %d %b"),ground=g["ground"],field=g["field"],
+            frm=g["time"],until=g["endt"],rule="Game scheduled at Wilsons Rd Reserve",
+            detail="No games are permitted at Wilsons Rd Reserve on any day - this fixture needs to be moved.",
+            games=[desc(g)],moves=opts_for([g]),sig="W|"+g["iso"]+"|"+g["ground"]+"|"+g["field"]+"|"+g["time"]))
 for g in games:
     if g["cat"]=="SMALL":
         bad=None
@@ -215,7 +222,7 @@ table.g td{border-bottom:1px solid var(--line);padding:6px 8px}
 tr.dhead td{background:#eef2f8;font-weight:700;color:var(--navy);position:sticky;top:56px}
 .badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;background:#eef2f8;color:var(--mut);white-space:nowrap}
 .b-BIG{background:#e6eefc;color:#1f3864}.b-MID{background:#e9f7ef;color:#1e7d46}.b-SMALL{background:#fdf0e6;color:#a85b13}.b-TINY{background:#fceaf3;color:#a3316f}.b-AAL{background:#eee9fb;color:#5b3ea6}
-.g-pettys{color:#1f6feb}.g-powl{color:#8a5cf6}.g-timber{color:#0f9d58}
+.g-pettys{color:#1f6feb}.g-powl{color:#8a5cf6}.g-timber{color:#0f9d58}.g-wilsons{color:#c0392b}
 .foot{color:var(--mut);font-size:11px;margin-top:22px}
 tr.clashrow td{background:#fdeceb!important}
 tr.moved-old td{text-decoration:line-through;opacity:.5;background:#f7f7f8!important}
@@ -234,7 +241,7 @@ tr.moved-new td{background:#eaf5ea!important;font-weight:600}
 A full pitch = <b>1.0</b>. &nbsp; <b>U14 &amp; older</b> = whole pitch (must be alone). &nbsp; <b>U10&ndash;U13</b> = &frac12; each (max 2). &nbsp;
 <b>U7/8/9</b> = &frac14; each (max 4). &nbsp; All-Abilities treated as &frac12;.<br>
 Allowed combos on one pitch at the same time: 2&times;U10-13 &nbsp;|&nbsp; 1&times;U10-13 + up to 2&times;U7-9 &nbsp;|&nbsp; up to 4&times;U8/9 &nbsp;|&nbsp; 2&times;U6/7 + 2&times;U8/9.<br>
-<b>Location ban:</b> U8/9 may not play at Timber Ridge, or on Powerful Owl Park pitches 2 &amp; 3. &nbsp;
+<b>Location ban:</b> U8/9 may not play at Timber Ridge, or on Powerful Owl Park pitches 2 &amp; 3. &nbsp; <b>Wilsons Rd Reserve is not available &ndash; no games may be scheduled there on any day.</b><br>
 <span style="color:#667">(Overlap uses match + warm-up windows: All-Abilities 40m, U6&ndash;9 45m, U10&ndash;11 65m, U12&ndash;14 75m, U15 90m, U16&ndash;17 100m, U18 110m, Seniors/U20&ndash;23 120m. "Pitch" = physical field.)</span>
 </div>
 <h2 id="clashhead">Potential clashes</h2>
@@ -255,8 +262,8 @@ Allowed combos on one pitch at the same time: 2&times;U10-13 &nbsp;|&nbsp; 1&tim
 </div>
 <script>
 const DATA=__DATA__, ISS=__ISS__, U13=__U13__;
-const gsh=g=>g==="Pettys Reserve"?"Pettys":g==="Powerful Owl Park"?"Powerful Owl":"Timber Ridge";
-const gcl=g=>g==="Pettys Reserve"?"g-pettys":g==="Powerful Owl Park"?"g-powl":"g-timber";
+const gsh=g=>g==="Pettys Reserve"?"Pettys":g==="Powerful Owl Park"?"Powerful Owl":g==="Wilsons Rd Reserve"?"Wilsons":"Timber Ridge";
+const gcl=g=>g==="Pettys Reserve"?"g-pettys":g==="Powerful Owl Park"?"g-powl":g==="Wilsons Rd Reserve"?"g-wilsons":"g-timber";
 const MOVEMAP={};
 function optsHtml(i){
   MOVEMAP[i.sig]=i.moves||[];
@@ -278,7 +285,7 @@ document.getElementById('cards').innerHTML=
  '<div class="card"><div class="n" style="color:'+(ISS.length?'#c0392b':'#2e7d32')+'">'+ISS.length+'</div><div class="l">Potential clashes</div></div>';
 const ib=document.getElementById('issues');
 if(!ISS.length){ib.innerHTML='<div class="none">&#10003; No rule breaches found.</div>';}
-else{ib.innerHTML=ISS.map(i=>'<div class="issue '+(i.rule.includes('location')?'loc':'')+'">'+
+else{ib.innerHTML=ISS.map(i=>'<div class="issue '+((i.rule.includes('location')||i.rule.includes('Wilsons'))?'loc':'')+'">'+
   '<div class="top">'+i.datedisp+' &middot; '+gsh(i.ground)+' Pitch '+i.field+' &middot; '+i.frm+'–'+i.until+' &mdash; '+i.rule+'</div>'+
   '<div class="d">'+i.detail+'</div><ul>'+i.games.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+optsHtml(i)+'</div>').join('');}
 document.getElementById('clashhead').textContent='Potential clashes ('+ISS.length+')';
@@ -341,7 +348,7 @@ function copyEmail(){
 }
 document.querySelectorAll('.fixsel').forEach(function(s){s.onchange=function(){var sig=s.getAttribute('data-sig'),v=s.value;if(v===''){delete CHANGES[sig];}else{CHANGES[sig]=MOVEMAP[sig][+v];}renderChanges();};});
 let ground="All",q="",date="",sortk="time",asc=true;
-const chips=["All","Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve"];
+const chips=["All","Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve","Wilsons Rd Reserve"];
 document.getElementById('chips').innerHTML=chips.map(c=>'<span class="chip'+(c==='All'?' active':'')+'" data-g="'+c+'">'+(c==='All'?'All grounds':gsh(c))+'</span>').join('');
 document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{ground=el.dataset.g;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===el));render();});
 const dseen=new Set(),dsel=document.getElementById('dsel');
