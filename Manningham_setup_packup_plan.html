@@ -41,7 +41,12 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 .bd-U7{background:#fceaf3;color:#a3316f}.bd-U89{background:#fdf0e6;color:#a85b13}.bd-MOD{background:#e9f7ef;color:#1e7d46}.bd-AAL{background:#eee9fb;color:#5b3ea6}.bd-SNR{background:#e6eefc;color:#1f3864}
 .bd.manual{background:#fde68a;color:#92400e;font-weight:700}
 .bd.moved{background:#1e7d46;color:#fff;font-weight:700}
+.bd.movedout{background:#9aa3af;color:#fff;font-weight:700}
 .movednote{font-size:11.5px;color:#1e5220;margin-top:5px;font-weight:600}
+.movednote.ghost{color:#5a6472}
+.gr.ghostrow{background:#fafafb}
+.gr.ghostrow .fix{text-decoration:line-through;opacity:.55}
+.gr.ghostrow .logos{opacity:.45}
 .duty{min-width:250px}
 .tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;margin-right:6px}
 .tag.s{background:var(--greenbg);color:var(--green)}.tag.p{background:var(--orangebg);color:var(--orange)}
@@ -233,7 +238,7 @@ if(document.getElementById('upd')&&typeof DATA_UPDATED!=='undefined')document.ge
 const gsh=g=>g==="Pettys Reserve"?"Pettys":g==="Powerful Owl Park"?"Powerful Owl":"Timber Ridge";
 const bcode=b=>b==="U7"?"U7":b==="U8/9"?"U89":b==="U10-13"?"MOD":b==="AAL"?"AAL":"SNR";
 document.getElementById('cards').innerHTML=
- '<div class="card"><div class="n">'+DATA.length+'</div><div class="l">Games (17 Jul → season end)</div></div>'+
+ '<div class="card"><div class="n">'+DATA.filter(g=>!g.ghost).length+'</div><div class="l">Games (17 Jul → season end)</div></div>'+
  '<div class="card"><div class="n" style="color:#1e7d46">'+DATA.filter(g=>g.setup).length+'</div><div class="l">Set-up duties</div></div>'+
  '<div class="card"><div class="n" style="color:#b45309">'+DATA.filter(g=>g.packup).length+'</div><div class="l">Pack-up duties</div></div>';
 let ground="All",date="",q="",team="";
@@ -256,7 +261,7 @@ function logoImg(team){var s=clubSlug(team);return s?'<img class="clogo" src="lo
 function render(){
  let r=DATA.filter(g=>(ground==="All"||g.ground===ground)&&(!date||g.iso===date)&&(!team||g.team===team));
  if(q)r=r.filter(g=>(g.home+' '+g.away+' '+g.comp+' '+g.pitch+' '+g.age+' '+g.band+' '+g.team+' '+g.datedisp).toLowerCase().includes(q));
- document.getElementById('count').textContent=r.length+' games';
+ document.getElementById('count').textContent=r.filter(g=>!g.ghost).length+' games';
  // group sub-pitches (1A/1B/Midi…) under the physical field they belong to
  const fieldOf=p=>{const m=p.match(/Pitch\s*(\d+)/);return m?m[1]:'?';};
  const subs={};
@@ -277,11 +282,12 @@ function render(){
    if(g.setup)duty+='<details class="dt"><summary><span class="tag s">SET UP</span></summary>'+(g.stasks.length?'<ul class="tasks">'+g.stasks.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'')+'</details>';
    if(g.packup)duty+='<details class="dt"><summary><span class="tag p">PACK UP</span></summary>'+(g.ptasks.length?'<ul class="tasks p">'+g.ptasks.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>':'')+'</details>';
    if(!duty)duty='<span class="sub">kit already out</span>';
+   if(g.ghost)duty='<span class="sub">no set-up here &ndash; game moved</span>';
    const away=g.mufc&&!g.home_mufc;
-   out+='<div class="gr"><div class="tm">'+g.time+'</div>'+
+   out+='<div class="gr'+(g.ghost?' ghostrow':'')+'"><div class="tm">'+g.time+'</div>'+
      (g.manual?'<div class="mid"><div class="fix">'+esc(g.home.replace("Manningham United Blues FC","MUFC"))+' <span class="bd manual">MANUAL ADD</span><span class="bd bd-'+bcode(g.band)+'">'+g.band+'</span></div>':'<div class="mid"><div class="fix'+(away?' away':'')+'">'+esc(g.home.replace("Manningham United Blues FC","MUFC"))+' v<span class="bd bd-'+bcode(g.band)+'">'+g.band+'</span></div>'+
      '<div class="fix'+(away?' away':'')+'">'+esc(g.away.replace("Manningham United Blues FC","MUFC"))+(away?' (AWAY)':'')+'</div>')+
-     '<div class="sub">'+esc(g.comp)+'</div>'+(g.override&&g.moved_from?'<div class="movednote"><span class="bd moved">MOVED</span> was '+gsh(g.moved_from.ground)+' &middot; '+esc(g.moved_from.pitch)+' &mdash; pending FV</div>':'')+(g.home_cr?'<div class="cr'+(g.cr_clash?' clash':'')+'">Change rooms &mdash; Home <b>CR'+g.home_cr+'</b> &middot; Away <b>CR'+g.away_cr+'</b>'+(g.cr_clash?' &nbsp;&#9888; overlap':'')+'</div>':(g.cr_clash?'<div class="cr clash">&#9888; Change-room clash &mdash; no free room</div>':''))+(g.manual?'':'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div>')+'</div>'+
+     '<div class="sub">'+esc(g.comp)+'</div>'+(g.override&&g.moved_from?'<div class="movednote"><span class="bd moved">MOVED</span> was '+gsh(g.moved_from.ground)+' &middot; '+esc(g.moved_from.pitch)+' &mdash; pending FV</div>':'')+(g.ghost&&g.moved_to?'<div class="movednote ghost"><span class="bd movedout">MOVED OUT</span> now '+gsh(g.moved_to.ground)+' &middot; '+esc(g.moved_to.pitch)+' &mdash; pending FV</div>':'')+(g.home_cr?'<div class="cr'+(g.cr_clash?' clash':'')+'">Change rooms &mdash; Home <b>CR'+g.home_cr+'</b> &middot; Away <b>CR'+g.away_cr+'</b>'+(g.cr_clash?' &nbsp;&#9888; overlap':'')+'</div>':(g.cr_clash?'<div class="cr clash">&#9888; Change-room clash &mdash; no free room</div>':''))+(g.manual?'':'<div class="logos">'+logoImg(g.home)+'<span class="vs">v</span>'+logoImg(g.away)+'</div>')+'</div>'+
      '<div class="duty">'+duty+'</div></div>';
  });
  closeF();
