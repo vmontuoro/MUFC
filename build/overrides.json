@@ -180,5 +180,31 @@
   "to_ground": "Pettys Reserve",
   "to_field": "2",
   "to_pitch": "Pitch 2"
+ },
+ {
+  "gkey": "2026-08-08|Pettys Reserve|Pitch 1C (Bottom Field) - Quarter Pitch 7v7|09:00|Manningham United Blues FC U08 MiniRoos - Joeys Mixed (Duke's)",
+  "iso": "2026-08-08",
+  "home": "MUFC U08 MiniRoos - Joeys Mixed (Duke's)",
+  "away": "Manningham United Blues FC U08 MiniRoos - Joeys Mixed (Slater's)",
+  "comp": "Coles MiniRoos Mixed Saturday (U6 - U11)",
+  "time": "09:00",
+  "from_ground": "Pettys",
+  "from_pitch": "Pitch 1C (Bottom Field) - Quarter Pitch 7v7",
+  "to_ground": "Pettys Reserve",
+  "to_field": "2",
+  "to_pitch": "Pitch 2"
+ },
+ {
+  "gkey": "2026-08-22|Pettys Reserve|Pitch 1B (Bottom Field)|08:30|Manningham United Blues FC U10 MiniRoos - Kangaroos Mixed",
+  "iso": "2026-08-22",
+  "home": "MUFC U10 MiniRoos - Kangaroos Mixed",
+  "away": "Ashburton United SC U10 MiniRoos - Kangaroos Mixed Meerkats",
+  "comp": "Coles MiniRoos Mixed Saturday (U6 - U11)",
+  "time": "08:30",
+  "from_ground": "Pettys",
+  "from_pitch": "Pitch 1B (Bottom Field)",
+  "to_ground": "Timber Ridge Reserve",
+  "to_field": "1",
+  "to_pitch": "Pitch 1"
  }
 ]
