@@ -4,7 +4,10 @@
 <style>
 :root{--navy:#1f3864;--blue:#2e5aac;--ink:#1a1a1a;--mut:#667;--line:#e3e7ee;--band:#f6f8fb;--green:#1e7d46;--greenbg:#e9f7ef;--orange:#b45309;--orangebg:#fdf3e3;}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink)}
-header{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:24px 22px}
+header{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:24px 22px;display:flex;align-items:center;gap:16px}
+.hlogo{height:62px;width:62px;object-fit:contain;flex:0 0 auto}
+.hmeta{min-width:0}
+@media(max-width:520px){.hlogo{height:46px;width:46px}}
 header h1{margin:0 0 4px;font-size:21px}header p{margin:0;opacity:.85;font-size:13px}
 .wrap{max-width:1080px;margin:0 auto;padding:20px 22px 60px}
 .cards{display:flex;flex-wrap:wrap;gap:14px;margin:16px 0}
@@ -89,8 +92,8 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 @media print{.gtoggle{display:none}.gvenue{box-shadow:none}}
 </style></head><body>
 <div class="updated">Fixtures last updated <b id="upd">2 Jul 2026</b> &middot; 2026 season &middot; always confirm late changes on Dribl</div>
-<header><h1>Manningham United Blues &ndash; Pitch Setup &amp; Pack-up Plan</h1>
-<p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; 17 Jul &rarr; mid-Sep 2026</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_fixtures.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Fixtures</a><a href="Manningham_schedule_clashes.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Clash check</a></div></header>
+<header><img class="hlogo" src="logos/manningham-united-blues-fc.png" alt="Manningham United Blues FC"><div class="hmeta"><h1>Manningham United Blues &ndash; Pitch Setup &amp; Pack-up Plan</h1>
+<p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; 17 Jul &rarr; mid-Sep 2026</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_fixtures.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Fixtures</a><a href="Manningham_schedule_clashes.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Clash check</a></div></div></header>
 <div class="wrap">
 <section id="grounds">
 <h2>Ground layouts</h2>

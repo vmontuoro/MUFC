@@ -71,7 +71,10 @@ TEMPLATE=r'''<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta na
 <style>
 :root{--navy:#1f3864;--blue:#2e5aac;--ink:#1a1a1a;--mut:#667;--line:#e3e7ee;--band:#f6f8fb;--green:#2e7d32;}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink)}
-header{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:26px 22px}
+header{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:26px 22px;display:flex;align-items:center;gap:16px}
+.hlogo{height:62px;width:62px;object-fit:contain;flex:0 0 auto}
+.hmeta{min-width:0}
+@media(max-width:520px){.hlogo{height:46px;width:46px}}
 header h1{margin:0 0 4px;font-size:22px}header p{margin:0;opacity:.85;font-size:13px}
 .wrap{max-width:1200px;margin:0 auto;padding:20px 22px 60px}
 .cards{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0}
@@ -98,8 +101,8 @@ table.games tr:nth-child(even) td{background:var(--band)}
 .tag-date{font-weight:600;white-space:nowrap}
 .foot{color:var(--mut);font-size:11px;margin-top:22px}
 </style></head><body>
-<header><h1>Manningham United Blues &ndash; Fixtures &amp; Overlap Check</h1>
-<p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; Source: fv.dribl.com (2026 season)</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_setup_packup_plan.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Setup &amp; pack-up</a><a href="Manningham_schedule_clashes.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Clash check</a></div></header>
+<header><img class="hlogo" src="logos/manningham-united-blues-fc.png" alt="Manningham United Blues FC"><div class="hmeta"><h1>Manningham United Blues &ndash; Fixtures &amp; Overlap Check</h1>
+<p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; Source: fv.dribl.com (2026 season)</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_setup_packup_plan.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Setup &amp; pack-up</a><a href="Manningham_schedule_clashes.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Clash check</a></div></div></header>
 <div class="wrap">
 <div class="cards" id="cards"></div>
 <h2>Overlap &amp; clash check</h2>
