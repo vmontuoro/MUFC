@@ -16,8 +16,9 @@ Which generator produces which page:
 
 ## 0. Preconditions
 - Working dir: `C:\Users\cenzo\Claude\Projects\Dribl scraper`
-- The three raw dumps must hold a **FULL-SEASON** capture: `build/raw_pettys.txt`,
-  `build/raw_powl.txt`, `build/raw_timber.txt`. If stale/missing, give the user the
+- The raw dumps must hold a **FULL-SEASON** capture: `build/raw_pettys.txt`, `build/raw_powl.txt`,
+  `build/raw_timber.txt`, `build/raw_wilsons.txt`. **`raw_wilsons.txt` is normally EMPTY** — the club
+  has no access to Wilsons Rd Reserve, so any fixture found there is flagged as a rule violation. If stale/missing, give the user the
   **cowork capture prompt** (below) and wait for the files.
 
 ## 0b. Manual overrides — ASK THE USER PER DATE
@@ -28,6 +29,16 @@ publishing, ask the user for each of those dates** (AskUserQuestion) whether to:
 - **drop** it (the fresh Dribl capture now contains FV's actioned fixture — the override is stale
   and would double-apply).
 Then prune `build/overrides.json` accordingly and regenerate. Never decide this silently.
+
+## 0c. Sanity-check the capture is not corrupt
+A partial/interrupted save has produced a file with embedded null bytes before (silently halving the
+season). Before regenerating:
+```
+python -c "
+for f in ['pettys','powl','timber','wilsons']:
+ raw=open(f'build/raw_{f}.txt','rb').read(); print(f, len(raw), 'nulls=', raw.count(bytes([0])))"
+```
+Any non-zero null count = corrupt; restore from git (`git checkout main -- build/raw_<x>.txt`) and re-capture.
 
 ## 1. Regenerate everything
 ```
@@ -91,7 +102,7 @@ The private `Manningham_manager_mapping_WORKSHEET_PRIVATE.xlsx` is rebuilt separ
 ## cowork capture prompt (give to the user when raw data is stale)
 ```
 Task: Capture Manningham United Blues' full-season home fixtures from Dribl, one file per ground.
-For EACH of the 3 ground URLs below: open it, change the date filter to the ENTIRE 2026 season
+For EACH of the 4 ground URLs below: open it, change the date filter to the ENTIRE 2026 season
 (from the first round to the last — NOT the default few weeks; try swapping date_range=default for
 date_range=all), scroll so every fixture lazy-loads, then copy the full fixtures text and save
 (overwrite) to the matching file in C:\Users\cenzo\Claude\Projects\Dribl scraper\build\ .
@@ -99,4 +110,6 @@ Keep each game's date, time, home, '-', away, competition, ground+pitch and roun
   Pettys Reserve  -> raw_pettys.txt : https://fv.dribl.com/fixtures/?date_range=default&season=nPmrj2rmow&ground=gld49gj0mW&timezone=Australia%2FSydney
   Powerful Owl    -> raw_powl.txt   : https://fv.dribl.com/fixtures/?date_range=default&season=nPmrj2rmow&ground=AnmYl5x1dz&timezone=Australia%2FSydney
   Timber Ridge    -> raw_timber.txt : https://fv.dribl.com/fixtures/?date_range=default&season=nPmrj2rmow&ground=jJmXYXRWNn&timezone=Australia%2FSydney
+  Wilsons Rd Res  -> raw_wilsons.txt: (find Wilsons Rd Reserve in the ground filter) — expected to be EMPTY;
+                    save an empty file if there are no fixtures. Any game here is a scheduling error.
 ```

@@ -3,7 +3,7 @@ from itertools import combinations
 from dribl_parse import read
 HERE=os.path.dirname(os.path.abspath(__file__)); OUTDIR=os.path.dirname(HERE)
 OUT=os.path.join(OUTDIR,"Manningham_fixtures.html")
-files={"Pettys Reserve":os.path.join(HERE,"raw_pettys.txt"),"Powerful Owl Park":os.path.join(HERE,"raw_powl.txt"),"Timber Ridge Reserve":os.path.join(HERE,"raw_timber.txt")}
+files={"Pettys Reserve":os.path.join(HERE,"raw_pettys.txt"),"Powerful Owl Park":os.path.join(HERE,"raw_powl.txt"),"Timber Ridge Reserve":os.path.join(HERE,"raw_timber.txt"),"Wilsons Rd Reserve":os.path.join(HERE,"raw_wilsons.txt")}
 MONTHS={m:i for i,m in enumerate(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],1)}
 def parse_date(s):
     p=s.split(); return dt.date(int(p[3]),MONTHS[p[2][:3]],int(p[1]))
@@ -60,7 +60,7 @@ for (gr,iso),gs in dd.items():
             cur-=1; act=[x for x in act if x is not g]
 games.sort(key=lambda g:(g["date"],g["start"],g["ground"]))
 gsummary=[]
-for gr in ["Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve"]:
+for gr in ["Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve","Wilsons Rd Reserve"]:
     gg=[g for g in games if g["ground"]==gr]
     gsummary.append(dict(ground=gr,n=len(gg),
         rng=f'{min(x["date"] for x in gg).strftime("%d %b")} – {max(x["date"] for x in gg).strftime("%d %b")}' if gg else "–",peak=peak.get(gr)))
@@ -95,7 +95,7 @@ table.games{width:100%;border-collapse:collapse;font-size:12.5px}
 table.games th{position:sticky;top:56px;background:var(--navy);color:#fff;padding:8px 8px;text-align:left;cursor:pointer;white-space:nowrap;font-weight:600}
 table.games td{border-bottom:1px solid var(--line);padding:6px 8px;vertical-align:top}
 table.games tr:nth-child(even) td{background:var(--band)}
-.g-pettys{color:#1f6feb}.g-powl{color:#8a5cf6}.g-timber{color:#0f9d58}
+.g-pettys{color:#1f6feb}.g-powl{color:#8a5cf6}.g-timber{color:#0f9d58}.g-wilsons{color:#c0392b}
 .badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;background:#eef2f8;color:var(--mut)}
 .full{background:#e8f0ff;color:#2e5aac}
 .tag-date{font-weight:600;white-space:nowrap}
@@ -121,8 +121,8 @@ table.games tr:nth-child(even) td{background:var(--band)}
 </div>
 <script>
 const DATA=__DATA__, SUM=__SUM__;
-const gsh=g=>g==="Pettys Reserve"?"Pettys":g==="Powerful Owl Park"?"Powerful Owl":"Timber Ridge";
-const gcl=g=>g==="Pettys Reserve"?"g-pettys":g==="Powerful Owl Park"?"g-powl":"g-timber";
+const gsh=g=>g==="Pettys Reserve"?"Pettys":g==="Powerful Owl Park"?"Powerful Owl":g==="Wilsons Rd Reserve"?"Wilsons":"Timber Ridge";
+const gcl=g=>g==="Pettys Reserve"?"g-pettys":g==="Powerful Owl Park"?"g-powl":g==="Wilsons Rd Reserve"?"g-wilsons":"g-timber";
 const clashes=DATA.filter(g=>g.clash).length;
 document.getElementById('cards').innerHTML=
  '<div class="card"><div class="n">'+DATA.length+'</div><div class="l">Total home fixtures</div></div>'+
@@ -134,7 +134,7 @@ document.getElementById('okbox').innerHTML=clashes?
 document.getElementById('peakbody').innerHTML=SUM.map(s=>s.peak?
  '<tr><td>'+s.ground+'</td><td class="n">'+s.peak.n+'</td><td>'+s.peak.date+'</td><td>'+s.peak.frm+'</td><td>'+s.peak.until+'</td><td>'+s.peak.pitches.join(', ')+'</td></tr>':'').join('');
 let ground="All",q="",sortk="iso",asc=true;
-const chips=["All","Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve"];
+const chips=["All","Pettys Reserve","Powerful Owl Park","Timber Ridge Reserve","Wilsons Rd Reserve"];
 document.getElementById('chips').innerHTML=chips.map(c=>'<span class="chip'+(c==='All'?' active':'')+'" data-g="'+c+'">'+(c==='All'?'All grounds':gsh(c))+'</span>').join('');
 document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{ground=el.dataset.g;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===el));render();});
 document.getElementById('q').oninput=e=>{q=e.target.value.toLowerCase();render();};

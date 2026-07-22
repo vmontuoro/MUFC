@@ -227,7 +227,7 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <li>Spare <b>whistles, bibs &amp; linesman flags</b> are in a <b>box in the ref room</b></li></ul></div>
 </div>
 <h2>Match-day duties</h2>
-<div class="controls"><select id="gsel"><option value="All">All grounds</option><option value="Pettys Reserve">Pettys</option><option value="Powerful Owl Park">Powerful Owl</option><option value="Timber Ridge Reserve">Timber Ridge</option></select>
+<div class="controls"><select id="gsel"><option value="All">All grounds</option><option value="Pettys Reserve">Pettys</option><option value="Powerful Owl Park">Powerful Owl</option><option value="Timber Ridge Reserve">Timber Ridge</option><option value="Wilsons Rd Reserve">Wilsons</option></select>
 <select id="tsel"><option value="">All teams</option></select>
 <select id="dsel"><option value="">All dates</option></select>
 <input type="search" id="q" placeholder="Search team, competition, pitch, age…">
@@ -238,7 +238,7 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <script src="duties_data.js"></script>
 <script>
 if(document.getElementById('upd')&&typeof DATA_UPDATED!=='undefined')document.getElementById('upd').textContent=DATA_UPDATED;
-const gsh=g=>g==="Pettys Reserve"?"Pettys":g==="Powerful Owl Park"?"Powerful Owl":"Timber Ridge";
+const gsh=g=>g==="Pettys Reserve"?"Pettys":g==="Powerful Owl Park"?"Powerful Owl":g==="Wilsons Rd Reserve"?"Wilsons":"Timber Ridge";
 const bcode=b=>b==="U7"?"U7":b==="U8/9"?"U89":b==="U10-13"?"MOD":b==="AAL"?"AAL":"SNR";
 document.getElementById('cards').innerHTML=
  '<div class="card"><div class="n">'+DATA.filter(g=>!g.ghost).length+'</div><div class="l">Games (17 Jul → season end)</div></div>'+
