@@ -20,7 +20,7 @@ def parse_date(s):
 def duration(t,comp):
     if "All Abilities" in comp: return 25
     if "MiniRoos" in t or re.search(r'U0[6-9]\b',t) or "U10" in t or "U11" in t: return 40
-    if "Seniors" in t or "Reserves" in t: return 90
+    if "Seniors" in t or "Reserves" in t or "Over 45" in t: return 90
     if re.search(r'U2[013]\b',t): return 90
     if re.search(r'U1[78]\b',t) or "17/18" in t: return 70
     if re.search(r'U1[56]\b',t): return 70
@@ -42,6 +42,7 @@ for ground,path in files.items():
     _tuples=read(path)
     if ground=="Pettys Reserve": _tuples=list(_tuples)+manual_games.build(_tuples,parse_date)
     for date_s,time_s,home,away,comp,pitch,rnd in _tuples:
+        home=manual_games.strip_mark(home); away=manual_games.strip_mark(away)
         d=parse_date(date_s); hh,mm=map(int,time_s.split(":")); start=hh*60+mm
         dur=duration(home+" "+away,comp); num,ftype,plabel=field_info(pitch,ground)
         cp=[x.strip() for x in comp.split("|")]
