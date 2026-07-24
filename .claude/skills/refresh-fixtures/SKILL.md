@@ -9,6 +9,15 @@ The site is data-driven: Python generators in `build/` parse text dumps of Dribl
 fixtures page and produce the published files. Follow these steps in order.
 
 Which generator produces which page:
+Manual (non-Dribl) games live in `build/manual_games.py` and are injected into all four
+generators: the recurring Saturday All-Abilities + Girls Clinic events, and the **Over 45 Men
+Friday-night season** (`FRIDAY_O45` — edit that list to add/remove games; runs to 06 Nov, past
+the FV season end). O45 games are ALWAYS at Pettys — even rounds whose fixture says "Away"
+(those display the opponent as home side) — auto-placed on Pitch 1 (Bottom) unless Dribl
+occupies it that evening, then Pitch 2. Manual games are flagged by the `[MANUAL ADD]` suffix
+on the non-Manningham side; generators must use `manual_games.is_manual()/strip_mark()`, never
+compare `== MARK` directly.
+
 All four generators apply `build/overrides.json` and share one clash rule (`build/pitch_capacity.py`:
 U14+/Seniors = 1.0 and must be alone, U10-13 = 0.5, U6-9 = 0.25, All-Abilities = 0.5; a field is
 flagged only when concurrent games sum > 1.0). Two guards worth knowing:
@@ -58,8 +67,10 @@ Do NOT trust the game count alone. Confirm the output spans the whole remaining 
 ```
 python -c "import json; d=json.loads(open('duties_data.js',encoding='utf-8').read().split('var DATA=',1)[1].rstrip(';')); iso=sorted(set(g['iso'] for g in d)); print('games',len(d),'| dates',iso[0],'->',iso[-1])"
 ```
-- Expect roughly **17 Jul → mid/late-Sep** (season end). If it stops early (e.g. "-> 2026-08-30")
-  when later fixtures should exist, the parser dropped something — investigate before publishing.
+- Expect **17 Jul → 06 Nov** (the Over 45 Friday games run past the FV season, which ends
+  mid-Sep; dates after ~13 Sep legitimately hold ONLY O45 games). If it stops early (e.g.
+  "-> 2026-08-30") when later fixtures should exist, the parser dropped something — investigate
+  before publishing.
 - **Known trap:** Dribl varies month spelling ("Jul" vs "July", "Sep" vs "Sept"). The parser's
   `DATE_RE` accepts 3–9 letter months and `parse_date` matches on the first 3 letters — if a whole
   month vanishes, that regex or `MONTHS` lookup is the first suspect.

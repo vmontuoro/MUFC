@@ -14,7 +14,7 @@ def parse_date(s):
 def duration(t,comp):
     # Clash window = match length + warm-up (a team warming up already occupies the pitch)
     if "All Abilities" in comp: return 40
-    if "Seniors" in t or "Reserves" in t or re.search(r'U2[0123]\b',t): return 120
+    if "Seniors" in t or "Reserves" in t or "Over 45" in t or re.search(r'U2[0123]\b',t): return 120
     if "17/18" in t: return 110
     if re.search(r'U18\b',t): return 110
     if re.search(r'U1[67]\b',t): return 100
@@ -40,6 +40,8 @@ for ground,path in files.items():
         d=parse_date(date_s)
         if d<CUTOFF: continue
         hh,mm=map(int,time_s.split(":")); start=hh*60+mm
+        home=manual_games.strip_mark(home); away=manual_games.strip_mark(away)
+        # bare-marker manual events (no real opponent) keep their fixed occupancy lengths
         dur=(90 if "All Abilities" in comp else 60) if away==manual_games.MARK else duration(home+" "+away,comp); num,plabel=field_info(pitch,ground)
         age=age_token(home if "Manningham" in home else away+" "+home); cat=category(age,comp)
         cp=[x.strip() for x in comp.split("|")]

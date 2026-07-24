@@ -26,7 +26,8 @@ for ground,path in files.items():
     for date_s,time_s,home,away,comp,pitch,rnd in _tuples:
         d=parse_date(date_s)
         if d<CUTOFF: continue
-        man=(away==manual_games.MARK)
+        man=manual_games.is_manual(home,away)
+        home=manual_games.strip_mark(home); away=manual_games.strip_mark(away)
         hh,mm=map(int,time_s.split(":")); start=hh*60+mm
         plabel=pitch.replace(ground,"").strip()
         home_mufc="Manningham United Blues" in home; away_mufc="Manningham United Blues" in away
