@@ -1,0 +1,101 @@
+name: Refresh MUFC fixtures
+
+# Rebuilds the published site from fresh Dribl data and pushes to `main`
+# (which triggers the existing GitHub Pages build).
+#
+# 22:11 UTC daily = ~08:11 AEST (winter) / ~09:11 AEDT (summer). GitHub cron is
+# always UTC, so the local time shifts by an hour across daylight saving — fine
+# for a morning refresh. Run it by hand any time from the Actions tab (Run workflow).
+on:
+  schedule:
+    - cron: "11 22 * * *"
+  workflow_dispatch:
+
+# Never let two refreshes race each other.
+concurrency:
+  group: refresh-fixtures
+  cancel-in-progress: false
+
+permissions:
+  contents: write        # lets the built-in GITHUB_TOKEN commit & push
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install --quiet openpyxl
+
+      - name: Capture Dribl fixtures (all four grounds)
+        run: python build/capture_dribl.py
+
+      - name: Guard - no null bytes in raw dumps
+        run: |
+          python - <<'PY'
+          import sys
+          bad = False
+          for f in ["pettys","powl","timber","wilsons"]:
+              raw = open(f"build/raw_{f}.txt","rb").read()
+              n = raw.count(b"\x00")
+              print(f, len(raw), "bytes, nulls=", n)
+              if n: bad = True
+          sys.exit(1 if bad else 0)
+          PY
+
+      - name: Regenerate all published files
+        run: python build/refresh.py
+
+      - name: Verify date range is not truncated
+        run: |
+          python - <<'PY'
+          import json, sys
+          d = json.loads(open("duties_data.js",encoding="utf-8").read().split("var DATA=",1)[1].rstrip(";\n"))
+          iso = sorted({g["iso"] for g in d})
+          print("games", len(d), "| dates", iso[0], "->", iso[-1])
+          # Known trap: a partial capture stops in August. Fail rather than publish a half season.
+          if len(d) < 50 or iso[-1] < "2026-09-06":
+              sys.exit(f"date range looks truncated (last={iso[-1]}, games={len(d)}) - NOT publishing")
+          PY
+
+      - name: PII scan (must find nothing)
+        run: |
+          if grep -rIlE '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|\b04[0-9]{8}\b' \
+               duties_data.js Manningham_fixtures.html Manningham_schedule_clashes.html; then
+            echo "::error::PII pattern found in a published file - aborting"; exit 1
+          fi
+
+      - name: Note any manual overrides (kept, not dropped, on automated runs)
+        run: |
+          python - <<'PY'
+          import sys; sys.path.insert(0,"build")
+          try:
+              import overrides
+              dts = overrides.dates()
+              if dts:
+                  print("::notice::Manual overrides present and KEPT this run:",
+                        ", ".join(f"{k}({v})" for k,v in sorted(dts.items())))
+                  print("If Dribl has now actioned any of these, prune build/overrides.json to avoid double-apply.")
+          except Exception as e:
+              print("overrides check skipped:", e)
+          PY
+
+      - name: Commit & push if anything changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to publish."
+          else
+            git commit -m "Auto-refresh fixtures from Dribl ($(date -u +%F))"
+            git push
+            echo "Published."
+          fi

@@ -17,6 +17,13 @@ import json, os
 HERE = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(HERE, "overrides.json")
 
+# Full records whose gkey matched no fixture in the last apply() call. An unmatched
+# override almost always means FV has since actioned the move in Dribl (the fixture
+# now lives at its requested ground, so the old-location key no longer exists) — the
+# clash page surfaces these so stale records get verified and deleted, not just
+# noticed in console output.
+last_unmatched = []
+
 
 class OverridesError(RuntimeError):
     """overrides.json exists but is unusable — never swallowed."""
@@ -57,6 +64,8 @@ def dates(ovr=None):
 
 def apply(games, gkey_of):
     """Rewrite overridden games in place. Returns the number applied."""
+    global last_unmatched
+    last_unmatched = []
     ovr = load()
     if not ovr:
         return 0
@@ -82,4 +91,5 @@ def apply(games, gkey_of):
         print("  ! %d override(s) matched NO fixture and had no effect:" % len(unmatched))
         for k in sorted(unmatched):
             print("      %s" % k)
+        last_unmatched = [by_key[k] for k in sorted(unmatched)]
     return n

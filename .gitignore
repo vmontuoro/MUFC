@@ -30,3 +30,9 @@ build/*
 .claude/*
 !.claude/skills/
 !.claude/skills/**
+
+# ---- GitHub Actions workflow (auto-refresh + publish) ----
+!.github/
+.github/*
+!.github/workflows/
+!.github/workflows/*.yml
