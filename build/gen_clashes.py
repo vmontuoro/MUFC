@@ -53,6 +53,19 @@ def gkey_of(g):
     """Stable id for one fixture row — must be reproducible client-side from a DATA row."""
     return "|".join([g["iso"],g["ground"],g["pitch"],g["time"],g["home"]])
 _napplied=_ovr.apply(games,gkey_of)   # apply saved moves BEFORE clash detection
+# Overrides that matched NO fixture: the old-location key no longer exists in the Dribl
+# capture, which almost always means FV has actioned the move. Surface them on the page
+# so stale records get verified against the schedule and deleted from overrides.json.
+def _stale_row(o):
+    k=(o.get("gkey") or "||||").split("|")
+    iso=o.get("iso") or k[0]
+    try: ddisp=dt.date.fromisoformat(iso).strftime("%a %d %b")
+    except ValueError: ddisp=iso
+    return dict(iso=iso,datedisp=ddisp,time=o.get("time") or k[3],
+        team=(o.get("home") or k[4]).replace("Manningham United Blues FC","MUFC"),away=o.get("away",""),
+        frm=(o.get("from_ground","?")+" "+o.get("from_pitch","")).strip(),
+        to=(o.get("to_ground","?")+" "+(o.get("to_pitch") or "Pitch "+str(o.get("to_field","?")))).strip())
+stale=sorted((_stale_row(o) for o in _ovr.last_unmatched),key=lambda x:(x["iso"],x["time"]))
 issues=[]; buckets={}
 for g in games: buckets.setdefault((g["ground"],g["iso"],g["field"]),[]).append(g)
 def desc(g): return f'{g["time"]} {g["catlabel"]} {g["pitch"]} ({g["home"].replace("Manningham United Blues FC","MUFC")} v {g["away"]})'
@@ -163,7 +176,7 @@ rows=[dict({k:g[k] for k in ("iso","datedisp","ground","field","time","endt","pi
            **({"override":True,"moved_from":g["moved_from"]} if g.get("override") else {})) for g in games]
 iss=[{k:(v.isoformat() if k=="date" else v) for k,v in x.items()} for x in issues]
 u13j=[{k:(v.isoformat() if k=="date" else v) for k,v in x.items()} for x in u13iss]
-DATA=json.dumps(rows); ISS=json.dumps(iss); U13J=json.dumps(u13j)
+DATA=json.dumps(rows); ISS=json.dumps(iss); U13J=json.dumps(u13j); STALE=json.dumps(stale)
 TEMPLATE=r'''<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Manningham – Schedule & Pitch-Rule Clashes</title>
 <style>
@@ -225,6 +238,10 @@ tr.moved-new td{background:#eaf5ea!important;font-weight:600}
 #changes ol.chgblocks li{white-space:pre-line;margin-bottom:10px}
 .copybtn.alt{background:#fff;color:var(--navy);margin-left:8px}
 .copybtn.alt:hover{background:#eef2f8}
+.stalebox{margin:14px 0;padding:13px 16px;border:2px solid var(--green);background:#eaf5ea;border-radius:10px;font-size:12.5px;line-height:1.55;color:#1e5220}
+.stalebox .top{font-weight:700;font-size:13px;margin-bottom:4px}
+.stalebox ul{margin:8px 0 0 18px;padding:0}
+.stalebox li{margin:3px 0}
 .fvbox{margin-top:16px;padding:12px 14px;border:1px solid #f2d49b;background:#fdf8ee;border-radius:10px}
 .fvlbl{font-size:12.5px;color:#8a6100;line-height:1.5}
 .copybtn.fv{background:#9a6b00;border-color:#9a6b00;margin-top:9px}
@@ -234,6 +251,7 @@ tr.moved-new td{background:#eaf5ea!important;font-weight:600}
 <p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; 17 Jul &rarr; mid-Sep 2026 &middot; Source: fv.dribl.com</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_setup_packup_plan.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Setup &amp; pack-up</a><a href="Manningham_fixtures.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Fixtures</a></div></div></header>
 <div class="wrap">
 <div class="cards" id="cards"></div>
+<div id="stale"></div>
 <h2>Pitch capacity rules applied</h2>
 <div class="rules">
 A full pitch = <b>1.0</b>. &nbsp; <b>U14 &amp; older</b> = whole pitch (must be alone). &nbsp; <b>U10&ndash;U13</b> = &frac12; each (max 2). &nbsp;
@@ -259,7 +277,14 @@ Allowed combos on one pitch at the same time: 2&times;U10-13 &nbsp;|&nbsp; 1&tim
 <div class="foot">Clashes are suggestions based on the rules above and estimated match lengths &ndash; verify against actual kickoff/finish times before acting. &middot; <a href="Manningham_fixtures.html" style="color:var(--mut)">full fixtures</a></div>
 </div>
 <script>
-const DATA=__DATA__, ISS=__ISS__, U13=__U13__;
+const DATA=__DATA__, ISS=__ISS__, U13=__U13__, STALE=__STALE__;
+if(STALE.length){document.getElementById('stale').innerHTML='<div class="stalebox">'+
+ '<div class="top">&#10003; '+STALE.length+' requested move'+(STALE.length===1?'':'s')+' appear'+(STALE.length===1?'s':'')+' to have been ACTIONED by FV</div>'+
+ 'These saved overrides no longer match any fixture &mdash; the game is no longer at its old location in Dribl, '+
+ 'which almost always means FV has made the requested move official. They are <b>no longer being applied</b> by this site. '+
+ 'Verify each game now shows at its requested ground in the schedule below, then delete its entry from <b>build/overrides.json</b>.<ul>'+
+ STALE.map(s=>'<li>'+s.datedisp+' '+s.time+' &middot; <b>'+s.team+'</b>'+(s.away?' v '+s.away:'')+' &mdash; was '+s.frm+' &rarr; requested '+s.to+'</li>').join('')+
+ '</ul></div>';}
 const gsh=g=>g==="Pettys Reserve"?"Pettys":g==="Powerful Owl Park"?"Powerful Owl":g==="Wilsons Rd Reserve"?"Wilsons":"Timber Ridge";
 const gcl=g=>g==="Pettys Reserve"?"g-pettys":g==="Powerful Owl Park"?"g-powl":g==="Wilsons Rd Reserve"?"g-wilsons":"g-timber";
 const MOVEMAP={};
@@ -426,5 +451,5 @@ function render(){
 }
 renderChanges();   // also performs the initial render() of the table
 </script></body></html>'''
-open(OUT,"w",encoding="utf-8").write(TEMPLATE.replace("__DATA__",DATA).replace("__ISS__",ISS).replace("__U13__",U13J).replace("__PFROM__",PROPOSE_FROM.strftime("%a %d %b %Y")))
+open(OUT,"w",encoding="utf-8").write(TEMPLATE.replace("__DATA__",DATA).replace("__ISS__",ISS).replace("__U13__",U13J).replace("__STALE__",STALE).replace("__PFROM__",PROPOSE_FROM.strftime("%a %d %b %Y")))
 print("clashes:",len(games),"games,",len(issues),"issues ->",OUT)
