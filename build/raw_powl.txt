@@ -2113,7 +2113,7 @@ VETO Sports State League Women's | State League 6 Women's - South-East
 Powerful Owl Park Pitch 2
 Round 17
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 09:00
 Manningham United Blues FC U11 MiniRoos - Kangaroos Mixed MUFC - Miniroos Boys U11 Kangas
 -
@@ -2122,7 +2122,7 @@ Coles MiniRoos Mixed Sunday (U6 - U11) | Coles MiniRoos Mixed Sunday East 11 Kan
 Powerful Owl Park Pitch 2B
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 09:00
 Manningham United Blues FC U11 MiniRoos - Wallabies Mixed MUFC - Miniroos Boys U11W (Colosimo's)
 -
@@ -2131,7 +2131,7 @@ Coles MiniRoos Mixed Sunday (U6 - U11) | Coles MiniRoos Mixed Sunday East 11 Wal
 Powerful Owl Park Pitch 2A
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 09:30
 Manningham United Blues FC U08 MiniRoos - Joeys Female MUFC - Miniroos Girls U8J (Yianna)
 -
@@ -2140,7 +2140,7 @@ Coles MiniRoos Girls' Sunday (U6 - U11) | Coles MiniRoos Girls' East 8 Joeys
 Powerful Owl Park Pitch 1 - Midi Field B
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 09:30
 Manningham United Blues FC U08 MiniRoos - Kangaroos Mixed MUFC - Miniroos Boys U8K (Arnold's)
 -
@@ -2149,7 +2149,7 @@ Coles MiniRoos Mixed Sunday (U6 - U11) | Coles MiniRoos Mixed Sunday South-East 
 Powerful Owl Park Pitch 1B
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 09:30
 Manningham United Blues FC U08 MiniRoos - Wallabies Mixed MUFC - Miniroos Boys U8W (Coe's)
 -
@@ -2158,7 +2158,7 @@ Coles MiniRoos Mixed Sunday (U6 - U11) | Coles MiniRoos Mixed Sunday East 8 Wall
 Powerful Owl Park Pitch 1 - Midi Field A
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 10:10
 Manningham United Blues FC U12 Juniors - B Mixed MUFC - Junior Boys U12B (Robert)
 -
@@ -2167,7 +2167,7 @@ Junior Mixed Sunday (U12 - U16) | Mixed Sunday East 12B Blue
 Powerful Owl Park Pitch 2B
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 10:30
 Manningham United Blues FC U08 MiniRoos - Joeys Female MUFC - Miniroos Girls U8J (Amelia & Karina)
 -
@@ -2176,7 +2176,7 @@ Coles MiniRoos Girls' Sunday (U6 - U11) | Coles MiniRoos Girls' North-East 8 Joe
 Powerful Owl Park Pitch 1 - Midi Field A
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 10:30
 Manningham United Blues FC U07 MiniRoos - Joeys Mixed MUFC - Miniroos Boys U7J (Green)
 -
@@ -2185,7 +2185,7 @@ Coles MiniRoos Mixed Sunday (U6 - U11) | Coles MiniRoos Mixed Sunday East 7 Joey
 Powerful Owl Park Pitch 1 - Midi Field B
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 10:30
 Manningham United Blues FC U10 MiniRoos - Wallabies Mixed MUFC - Miniroos Boys U10W (Tilio's)
 -
@@ -2194,7 +2194,7 @@ Coles MiniRoos Mixed Sunday (U6 - U11) | Coles MiniRoos Mixed Sunday East 10 Wal
 Powerful Owl Park Pitch 1B
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 11:40
 Manningham United Blues FC U11 MiniRoos - Joeys Female MUFC - Miniroos Girls U11J (Grace)
 -
@@ -2203,7 +2203,7 @@ Coles MiniRoos Girls' Sunday (U6 - U11) | Coles MiniRoos Girls' East 11 Joeys
 Powerful Owl Park Pitch 1B
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 11:40
 Manningham United Blues FC U13 Juniors - B Mixed MUFC - Junior Boys U13B (Samir)
 -
@@ -2212,7 +2212,7 @@ Junior Mixed Sunday (U12 - U16) | Mixed Sunday East 13B
 Powerful Owl Park Pitch 1 - Midi Field B
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 12:00
 Manningham United Blues FC U15 Juniors - B Female MUFC - Junior Girls U15B (Ethan)
 -
@@ -2221,7 +2221,7 @@ Junior Girls Sunday (U12 - U18) | Girls' South-East 15B
 Powerful Owl Park Pitch 2
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 13:15
 Manningham United Blues FC U16 Juniors - A Mixed MUFC - Junior Boys U16A
 -
@@ -2230,7 +2230,7 @@ Junior Mixed Sunday (U12 - U16) | Mixed South-East 16A
 Powerful Owl Park Pitch 1
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 15:00
 Manningham United Blues FC U18 Juniors - A Male MUFC - Junior Boys U18A
 -

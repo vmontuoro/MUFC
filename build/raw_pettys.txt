@@ -3184,7 +3184,7 @@ Boys Victorian Youth Premier League 1 | U18 YPL1 Boys
 Pettys Reserve Pitch 1 (Bottom Field)
 Round 28
 
-Fri 04 Sept 2026
+Fri 04 Sep 2026
 19:00
 Manningham United Blues FC U21 Arthur
 -
@@ -3193,7 +3193,7 @@ Men's Metropolitan Under 21 | Men's Metropolitan League U21 - South-East
 Pettys Reserve Pitch 2 (Top Field)
 Round 18
 
-Sat 05 Sept 2026
+Sat 05 Sep 2026
 08:30
 Manningham United Blues FC U09 MiniRoos - Wallabies Mixed MUFC - Miniroos Boys U9W (Corica's)
 -
@@ -3202,7 +3202,7 @@ Coles MiniRoos Mixed Saturday (U6 - U11) | Coles MiniRoos Mixed Saturday East 9 
 Pettys Reserve Pitch 2B (Top Field)
 Round 18
 
-Sat 05 Sept 2026
+Sat 05 Sep 2026
 08:30
 Manningham United Blues FC U07 MiniRoos - Joeys Mixed MUFC - Miniroos Boys U7J (Purple)
 -
@@ -3211,7 +3211,7 @@ Coles MiniRoos Mixed Saturday (U6 - U11) | Coles MiniRoos Mixed Saturday East 7 
 Pettys Reserve Pitch 1E (Bottom Field) - Quarter Pitch 4v4
 Round 18
 
-Sat 05 Sept 2026
+Sat 05 Sep 2026
 08:30
 Manningham United Blues FC U07 MiniRoos - Joeys Mixed MUFC - Miniroos Boys U7J (White)
 -
@@ -3220,7 +3220,7 @@ Coles MiniRoos Mixed Saturday (U6 - U11) | Coles MiniRoos Mixed Saturday East 7 
 Pettys Reserve Pitch 2E (Top Field) - Quarter Pitch 4v4
 Round 18
 
-Sat 05 Sept 2026
+Sat 05 Sep 2026
 09:00
 Manningham United Blues FC U08 MiniRoos - Joeys Mixed MUFC - Miniroos Boys U8J (Duke's)
 -
@@ -3229,7 +3229,7 @@ Coles MiniRoos Mixed Saturday (U6 - U11) | Coles MiniRoos Mixed Saturday East 8 
 Pettys Reserve Pitch 1C (Bottom Field) - Quarter Pitch 7v7
 Round 18
 
-Sat 05 Sept 2026
+Sat 05 Sep 2026
 09:00
 Manningham United Blues FC U08 MiniRoos - Joeys Mixed MUFC - Miniroos Boys U8J (Slater's)
 -
@@ -3238,7 +3238,7 @@ Coles MiniRoos Mixed Saturday (U6 - U11) | Coles MiniRoos Mixed Saturday East 8 
 Pettys Reserve Pitch 1D (Bottom Field) - Quarter Pitch 7v7
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 09:15
 Manningham United Blues FC U13
 -
@@ -3247,7 +3247,7 @@ Community Premier League Girls | CPL Girls U13 South-East
 Pettys Reserve Pitch 2A (Top Field)
 Round 21
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 09:15
 Manningham United Blues FC U14 Juniors - C Female MUFC - Junior Girls U14C (Christian)
 -
@@ -3256,7 +3256,7 @@ Junior Girls Sunday (U12 - U18) | Girls' South-East 14C
 Pettys Reserve Pitch 1 (Bottom Field)
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 11:00
 Manningham United Blues FC U15
 -
@@ -3265,7 +3265,7 @@ Community Premier League Girls | CPL Girls U15 South-East
 Pettys Reserve Pitch 1 (Bottom Field)
 Round 21
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 11:00
 Manningham United Blues FC U14 Juniors - C Mixed MUFC - Junior Boys U14C (Phil)
 -
@@ -3274,7 +3274,7 @@ Junior Mixed Sunday (U12 - U16) | Mixed East 14C Red
 Pettys Reserve Pitch 2 (Top Field)
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 12:30
 Manningham United Blues FC U14 Juniors - A Mixed MUFC - Junior Boys U14A
 -
@@ -3283,7 +3283,7 @@ Junior Mixed Sunday (U12 - U16) | Mixed East 14A
 Pettys Reserve Pitch 2 (Top Field)
 Round 18
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 13:00
 Manningham United Blues FC U17
 -
@@ -3292,7 +3292,7 @@ Community Premier League Girls | CPL Girls U17 South-East
 Pettys Reserve Pitch 1 (Bottom Field)
 Round 21
 
-Sun 06 Sept 2026
+Sun 06 Sep 2026
 15:00
 Manningham United Blues FC Seniors MUFC - Women's Metro League
 -
@@ -3301,7 +3301,7 @@ Women's Metropolitan League | Women's Metropolitan League - South-East
 Pettys Reserve Pitch 2 (Top Field)
 Round 16
 
-Sun 13 Sept 2026
+Sun 13 Sep 2026
 08:30
 Manningham United Blues FC U13
 -
@@ -3310,7 +3310,7 @@ Boys Victorian Youth Premier League 1 | U13 YPL1 Boys
 Pettys Reserve Pitch 2A (Top Field)
 Round 30
 
-Sun 13 Sept 2026
+Sun 13 Sep 2026
 09:45
 Manningham United Blues FC U14
 -
@@ -3319,7 +3319,7 @@ Boys Victorian Youth Premier League 1 | U14 YPL1 Boys
 Pettys Reserve Pitch 1 (Bottom Field)
 Round 30
 
-Sun 13 Sept 2026
+Sun 13 Sep 2026
 11:30
 Manningham United Blues FC U15
 -
@@ -3328,7 +3328,7 @@ Boys Victorian Youth Premier League 1 | U15 YPL1 Boys
 Pettys Reserve Pitch 1 (Bottom Field)
 Round 30
 
-Sun 13 Sept 2026
+Sun 13 Sep 2026
 13:25
 Manningham United Blues FC U16
 -
@@ -3337,7 +3337,7 @@ Boys Victorian Youth Premier League 1 | U16 YPL1 Boys
 Pettys Reserve Pitch 1 (Bottom Field)
 Round 30
 
-Sun 13 Sept 2026
+Sun 13 Sep 2026
 15:30
 Manningham United Blues FC U18
 -
