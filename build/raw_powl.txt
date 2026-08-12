@@ -1754,15 +1754,6 @@ Powerful Owl Park Pitch 2
 Round 14
 
 Sun 16 Aug 2026
-09:00
-Manningham United Blues FC U13 Juniors - B Mixed MUFC - Junior Boys U13B (Samir)
--
-Mooroolbark SC U13 Juniors - B Mixed Mooroolbark SC - Under 13 Andrew
-Junior Mixed Sunday (U12 - U16) | Mixed Sunday East 13B
-Powerful Owl Park Pitch 3A
-Round 15
-
-Sun 16 Aug 2026
 09:30
 Manningham United Blues FC U08 MiniRoos - Kangaroos Mixed MUFC - Miniroos Boys U8K (Arnold's)
 -
@@ -1826,6 +1817,15 @@ Powerful Owl Park Pitch 1
 Round 15
 
 Sun 16 Aug 2026
+14:00
+Manningham United Blues FC U13 Juniors - B Mixed MUFC - Junior Boys U13B (Samir)
+-
+Mooroolbark SC U13 Juniors - B Mixed Mooroolbark SC - Under 13 Andrew
+Junior Mixed Sunday (U12 - U16) | Mixed Sunday East 13B
+Powerful Owl Park Pitch 3A
+Round 15
+
+Sun 16 Aug 2026
 15:15
 Manningham United Blues FC U18 Juniors - A Male MUFC - Junior Boys U18A
 -
@@ -1880,21 +1880,21 @@ Powerful Owl Park Pitch 1 - Midi Field A
 Round 16
 
 Sun 23 Aug 2026
-10:40
-Manningham United Blues FC U13 Juniors - B Mixed MUFC - Junior Boys U13B (Samir)
--
-Mazenod FC U13 Juniors - B Mixed
-Junior Mixed Sunday (U12 - U16) | Mixed Sunday East 13B
-Powerful Owl Park Pitch 1 - Midi Field B
-Round 16
-
-Sun 23 Aug 2026
 11:30
 Manningham United Blues FC U14 Juniors - C Female MUFC - Junior Girls U14C (Christian)
 -
 Ashburton United SC U14 Juniors - C Female
 Junior Girls Sunday (U12 - U18) | Girls' South-East 14C
 Powerful Owl Park Pitch 2
+Round 16
+
+Sun 23 Aug 2026
+12:10
+Manningham United Blues FC U13 Juniors - B Mixed MUFC - Junior Boys U13B (Samir)
+-
+Mazenod FC U13 Juniors - B Mixed
+Junior Mixed Sunday (U12 - U16) | Mixed Sunday East 13B
+Powerful Owl Park Pitch 1 - Midi Field B
 Round 16
 
 Sun 23 Aug 2026
