@@ -74,7 +74,13 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 @media print{.clogo{height:41px;width:41px}}
 .foot{color:var(--mut);font-size:11px;margin-top:22px}
 @media print{.controls{display:none}header{-webkit-print-color-adjust:exact}}
-#grounds{margin:14px 0 6px}#grounds h2{margin-top:8px}
+details.gdd{margin:26px 0 10px}
+details.gdd>summary{list-style:none;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+details.gdd>summary::-webkit-details-marker{display:none}
+details.gdd .gddtitle{display:block;font-size:15px;font-weight:700;color:var(--navy);border-bottom:2px solid var(--line);padding-bottom:6px;margin-bottom:10px}
+details.gdd>summary::after{content:'\25B8 tap to show';display:block;font-size:11px;font-weight:600;color:var(--mut);margin-top:2px}
+details.gdd[open]>summary::after{content:'\25BE hide'}
+#grounds{margin:14px 0 6px}
 .glegend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:12px;color:var(--mut);margin:2px 0 12px;align-items:center}
 .glegend .k{display:inline-flex;align-items:center;gap:6px}
 .gtoggle{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
@@ -95,9 +101,21 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <header><img class="hlogo" src="logos/manningham-united-blues-fc.png" alt="Manningham United Blues FC"><div class="hmeta"><h1>Manningham United Blues &ndash; Pitch Setup &amp; Pack-up Plan</h1>
 <p>Pettys Reserve &middot; Powerful Owl Park &middot; Timber Ridge Reserve &nbsp;|&nbsp; 17 Jul &rarr; mid-Sep 2026</p><div style="margin-top:9px;font-size:12px"><a href="Manningham_fixtures.html" style="color:rgba(255,255,255,.55);text-decoration:underline;margin-right:14px">Fixtures</a><a href="Manningham_schedule_clashes.html" style="color:rgba(255,255,255,.55);text-decoration:underline">Clash check</a></div></div></header>
 <div class="wrap">
+<h2 style="margin-top:6px">Match-day duties</h2>
+<div class="controls"><select id="gsel"><option value="All">All grounds</option><option value="Pettys Reserve">Pettys</option><option value="Powerful Owl Park">Powerful Owl</option><option value="Timber Ridge Reserve">Timber Ridge</option><option value="Wilsons Rd Reserve">Wilsons</option></select>
+<select id="tsel"><option value="">All teams</option></select>
+<select id="dsel"><option value="">All dates</option></select>
+<input type="search" id="q" placeholder="Search team, competition, pitch, age…">
+<span class="count" id="count"></span></div>
+<details class="gdd"><summary><span class="gddtitle">Ground layouts</span>
+<div class="glabel">Choose a ground</div>
+<div class="vtabs" id="vtabs"></div>
+</summary>
 <section id="grounds">
-<h2>Ground layouts</h2>
-<p style="font-size:12.5px;color:var(--mut);margin:0 0 10px">How each ground&rsquo;s fields divide into mini-pitches by age group. Pick a ground, then an age group.</p>
+<div class="glabel">Age group</div>
+<div class="gtoggle" id="gtoggle"></div>
+<div class="gvenues" id="gvenues"></div>
+<p style="font-size:12.5px;color:var(--mut);margin:14px 0 8px">How each ground&rsquo;s fields divide into mini-pitches by age group.</p>
 <div class="glegend">
 <span class="k"><span style="width:22px;height:15px;border-radius:4px;background:repeating-linear-gradient(0deg,#143352 0 4px,#0f2a45 4px 8px);border:1px solid #45B0E3"></span>Grass pitch</span>
 <span class="k"><span style="width:22px;height:15px;border-radius:4px;background:linear-gradient(180deg,#38a7dd,#2c86bd);border:1px solid #fff;box-shadow:inset 0 0 0 1px #7cc9ee"></span>Synthetic pitch</span>
@@ -105,12 +123,10 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <span class="k"><span style="width:22px;height:15px;border-radius:4px;background:repeating-linear-gradient(45deg,#dbe9f5 0 5px,#c3dcef 5px 10px);border:1px dashed #6f8aa5"></span>Car park</span>
 <span class="k"><span style="display:inline-flex;align-items:center;justify-content:center;padding:1px 7px;border-radius:999px;background:rgba(10,27,46,.82);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:11px">1a</span>Mini-pitch within a field</span>
 </div>
-<div class="glabel">Choose a ground</div>
-<div class="vtabs" id="vtabs"></div>
-<div class="glabel">Age group</div>
-<div class="gtoggle" id="gtoggle"></div>
-<div class="gvenues" id="gvenues"></div>
 </section>
+</details>
+<div id="body"></div>
+<div class="cards" id="cards"></div>
 <script>
 (function(){
  var grassBg='linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.05)),repeating-linear-gradient(0deg,#143352 0 26px,#0f2a45 26px 52px)';
@@ -199,13 +215,12 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
   [].forEach.call(vt.children,function(b,i){b.classList.toggle('active',i===selV);});
  }
  vt.innerHTML=VENUES.map(function(v,i){return '<span class="vtab'+(i===0?' active':'')+'" data-i="'+i+'">'+v.name+'</span>';}).join('');
- [].forEach.call(vt.children,function(b){b.onclick=function(){selV=+b.getAttribute('data-i');render();};});
+ [].forEach.call(vt.children,function(b){b.onclick=function(ev){ev.preventDefault();selV=+b.getAttribute('data-i');render();var dd=document.querySelector('details.gdd');if(dd)dd.open=true;};});
  tog.innerHTML=BTN.map(function(t,i){return '<span class="gchip'+(i===0?' active':'')+'" data-i="'+i+'">'+t+'</span>';}).join('');
  [].forEach.call(tog.children,function(b){b.onclick=function(){sel=+b.getAttribute('data-i');render();};});
  render();
 })();
 </script>
-<div class="cards" id="cards"></div>
 <h2>How duties work</h2>
 <div class="legend">
 <div class="lbox set"><h3>&#9654; SET UP &mdash; mini/mod (U7&ndash;U13)</h3><ul>
@@ -226,13 +241,6 @@ label.only{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap
 <li><b>Always return borrowed kit</b></li>
 <li>Spare <b>whistles, bibs &amp; linesman flags</b> are in a <b>box in the ref room</b></li></ul></div>
 </div>
-<h2>Match-day duties</h2>
-<div class="controls"><select id="gsel"><option value="All">All grounds</option><option value="Pettys Reserve">Pettys</option><option value="Powerful Owl Park">Powerful Owl</option><option value="Timber Ridge Reserve">Timber Ridge</option><option value="Wilsons Rd Reserve">Wilsons</option></select>
-<select id="tsel"><option value="">All teams</option></select>
-<select id="dsel"><option value="">All dates</option></select>
-<input type="search" id="q" placeholder="Search team, competition, pitch, age…">
-<span class="count" id="count"></span></div>
-<div id="body"></div>
 <div class="foot">Generated from Dribl fixtures. Each labelled sub-pitch (1A, 1B, Midi A&hellip;) is its own surface. Stretcher = one per ground (earliest full-pitch game brings it out); corner poles are per pitch. Away games (e.g. Timber Ridge) are the host club&rsquo;s responsibility. Verify against actual kickoff order on the day.</div>
 </div>
 <script src="duties_data.js"></script>
@@ -310,6 +318,6 @@ DATA.forEach(function(g){
  if(pick){date=pick;dsel.value=pick;}
 })();
 render();
-window.addEventListener('beforeprint',function(){document.querySelectorAll('.dt').forEach(function(d){d.dataset.wasopen=d.open?'1':'0';d.open=true;});});
-window.addEventListener('afterprint',function(){document.querySelectorAll('.dt').forEach(function(d){d.open=d.dataset.wasopen==='1';});});
+window.addEventListener('beforeprint',function(){document.querySelectorAll('.dt,details.gdd').forEach(function(d){d.dataset.wasopen=d.open?'1':'0';d.open=true;});});
+window.addEventListener('afterprint',function(){document.querySelectorAll('.dt,details.gdd').forEach(function(d){d.open=d.dataset.wasopen==='1';});});
 </script></body></html>
