@@ -1,5 +1,18 @@
 [
  {
+  "gkey": "2026-08-30|Powerful Owl Park|Pitch 2B|09:00|Manningham United Blues FC U09 MiniRoos - Kangaroos Mixed (Emerton's)",
+  "iso": "2026-08-30",
+  "home": "MUFC U09 MiniRoos - Kangaroos Mixed (Emerton's)",
+  "away": "Monash City Villarreal FC U09 MiniRoos - Kangaroos Mixed Monash City Villarreal FC U8 Yellow",
+  "comp": "Coles MiniRoos Mixed Sunday (U6 - U11)",
+  "time": "09:00",
+  "from_ground": "Powerful Owl",
+  "from_pitch": "Pitch 2B",
+  "to_ground": "Powerful Owl Park",
+  "to_field": "1",
+  "to_pitch": "Pitch 1D"
+ },
+ {
   "gkey": "2026-08-23|Powerful Owl Park|Pitch 1 - Midi Field B|12:10|Manningham United Blues FC U13 Juniors - B Mixed (Samir)",
   "iso": "2026-08-23",
   "home": "MUFC U13 Juniors - B Mixed (Samir)",
